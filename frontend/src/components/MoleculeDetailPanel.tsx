@@ -45,7 +45,7 @@ export default function MoleculeDetailPanel() {
   const desc = descriptors?.descriptors ?? {};
 
   return (
-    <div className="fixed bottom-8 left-2 z-30 w-[320px]">
+    <div className="fixed bottom-8 right-2 z-30 w-[320px]">
       <div className="bg-cream/95 backdrop-blur-sm border border-gold/30 rounded-lg shadow-xl overflow-hidden font-mono">
 
         {/* Header with close button */}
