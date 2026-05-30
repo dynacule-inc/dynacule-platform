@@ -19,6 +19,8 @@ interface AtomSelection {
   z: number;
 }
 
+export type ViewPreset = 'dynacule' | 'cartoon' | 'ribbon' | 'surface' | 'cpk' | 'backbone';
+
 export interface VizCommand {
   type: 'clear' | 'docking' | 'md' | 'qm';
   /** PDB data for docking ligand or MD trajectory (multi-model PDB) */
@@ -62,6 +64,10 @@ interface State {
   // Atom picking state
   selectedAtom: AtomSelection | null;
   setSelectedAtom: (atom: AtomSelection | null) => void;
+
+  // View preset state
+  viewPreset: ViewPreset;
+  setViewPreset: (preset: ViewPreset) => void;
 }
 
 export const useStore = create<State>((set) => ({
@@ -108,4 +114,8 @@ export const useStore = create<State>((set) => ({
   // Atom picking
   selectedAtom: null,
   setSelectedAtom: (selectedAtom) => set({ selectedAtom }),
+
+  // View preset
+  viewPreset: 'dynacule',
+  setViewPreset: (viewPreset) => set({ viewPreset }),
 }));
