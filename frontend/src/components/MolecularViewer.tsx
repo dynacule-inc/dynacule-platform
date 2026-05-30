@@ -50,8 +50,8 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
         try {
           const comp = await stage.loadFile('rcsb://1crn', { defaultRepresentation: false });
           if (comp) {
-            comp.addRepresentation('ribbon', { color: 'white', subdiv: 3, smoothSheet: true });
-            comp.addRepresentation('tube', { color: 'white', radius: 0.15, subdiv: 3 });
+            comp.addRepresentation('ribbon', { color: 'black', subdiv: 6, smoothSheet: true, scale: 1.5 });
+            comp.addRepresentation('tube', { color: 'black', radius: 0.15, subdiv: 3 });
             comp.name = 'default-sample';
             stage.autoView(300);
           }
@@ -84,14 +84,15 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
 
     // Ribbon representation for the protein backbone
     component.addRepresentation('ribbon', {
-      color: 'white',
-      subdiv: 3,
+      color: 'black',
+      subdiv: 6,
       smoothSheet: true,
+      scale: 1.5,
     });
 
     // Tube representation for the backbone tracing
     component.addRepresentation('tube', {
-      color: 'white',
+      color: 'black',
       radius: 0.15,
       subdiv: 3,
     });
