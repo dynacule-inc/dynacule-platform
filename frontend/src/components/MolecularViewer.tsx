@@ -52,7 +52,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
           if (comp) {
             comp.addRepresentation('ribbon', { color: '#2a2a2a', subdiv: 6, smoothSheet: true, scale: 1.5 });
             comp.addRepresentation('tube', { color: '#2a2a2a', radius: 0.15, subdiv: 3 });
-            comp.name = 'default-sample';
+            comp.setName('default-sample');
             // Auto-center with a short delay for representation rendering
             setTimeout(() => {
               try { stage.autoView(400); } catch {}
@@ -192,7 +192,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
               fontsize: 0.5,
               showOption: 0,
             });
-            comp.name = 'docking-ligand';
+            comp.setName('docking-ligand');
             overlayRef.current = comp;
           }
           setLoadStatus('');
@@ -223,7 +223,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
               radius: 0.2,
               sele: 'not protein',
             });
-            comp.name = 'md-trajectory';
+            comp.setName('md-trajectory');
             trajCompRef.current = comp;
           }
           setLoadStatus('');
@@ -301,7 +301,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
       );
       const comp = stage.addComponentFromObject(shape);
       comp.addRepresentation('buffer', { opacity: 0.6 });
-      comp.name = `highlight-${selectedAtom.index}`;
+      comp.setName(`highlight-${selectedAtom.index}`);
     } catch { /* noop */ }
   }, [selectedAtom]);
 

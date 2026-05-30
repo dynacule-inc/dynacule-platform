@@ -71,9 +71,9 @@ function parseSmiles(smiles: string): { atoms: Atom[]; bonds: Bond[] } {
       continue;
     }
 
-    if (c.isalpha && c.isupper()) {
+    if (/[a-zA-Z]/.test(c) && c === c.toUpperCase()) {
       let elem = c;
-      if (i + 1 < smiles.length && smiles[i + 1].islower()) {
+      if (i + 1 < smiles.length && smiles[i + 1] === smiles[i + 1].toLowerCase() && /[a-z]/.test(smiles[i + 1])) {
         elem += smiles[i + 1];
         i++;
       }
