@@ -50,10 +50,13 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
         try {
           const comp = await stage.loadFile('rcsb://1crn', { defaultRepresentation: false });
           if (comp) {
-            comp.addRepresentation('ribbon', { color: 'black', subdiv: 6, smoothSheet: true, scale: 1.5 });
-            comp.addRepresentation('tube', { color: 'black', radius: 0.15, subdiv: 3 });
+            comp.addRepresentation('ribbon', { color: '#2a2a2a', subdiv: 6, smoothSheet: true, scale: 1.5 });
+            comp.addRepresentation('tube', { color: '#2a2a2a', radius: 0.15, subdiv: 3 });
             comp.name = 'default-sample';
-            stage.autoView(300);
+            // Auto-center with a short delay for representation rendering
+            setTimeout(() => {
+              try { stage.autoView(400); } catch {}
+            }, 100);
           }
         } catch {
           // Offline or CORS — empty canvas is acceptable
@@ -84,7 +87,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
 
     // Ribbon representation for the protein backbone
     component.addRepresentation('ribbon', {
-      color: 'black',
+      color: '#2a2a2a',
       subdiv: 6,
       smoothSheet: true,
       scale: 1.5,
@@ -92,13 +95,15 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
 
     // Tube representation for the backbone tracing
     component.addRepresentation('tube', {
-      color: 'black',
+      color: '#2a2a2a',
       radius: 0.15,
       subdiv: 3,
     });
 
     // Ball+stick for ligands/non-polymer — only if there are small molecules
-    await component.autoView(300);
+    setTimeout(() => {
+      try { component.autoView(400); } catch {}
+    }, 100);
   }, []);
 
   /* ── Load molecule into viewer ────────────────────────────────────── */
