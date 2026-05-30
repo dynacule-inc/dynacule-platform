@@ -7,8 +7,7 @@ import type { ViewPreset } from '@/lib/store';
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /*  NGL Stage Component                                                        */
-/*  NGL requires WebGL — only runs in the browser. We use dynamic              */
-/*  import so Next.js doesn't try to SSR it.                                    */
+/*  NGL requires WebGL — only runs in the browser.                            */
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 interface MolecularViewerProps {
@@ -16,7 +15,7 @@ interface MolecularViewerProps {
   projectId?: string | null;
 }
 
-/* ── Preset definitions ────────────────────────────────────────────────────── */
+/* ── Preset display labels ─────────────────────────────────────────────────── */
 const PRESET_LABELS: Record<ViewPreset, string> = {
   dynacule: 'Dynacule',
   cartoon:  'Cartoon',
@@ -26,140 +25,181 @@ const PRESET_LABELS: Record<ViewPreset, string> = {
   backbone: 'Backbone',
 };
 
-/* ── Element color palette (CPK-inspired) ────────────────────────────────── */
-/* Used for 'element' colorScheme on atom-based representations.              */
+/* ── CPK-inspired element color palette ───────────────────────────────────── */
 const ELEMENT_COLORS: Record<string, [number, number, number]> = {
-  H:  [0.90, 0.90, 0.90],  // white
-  C:  [0.25, 0.25, 0.25],  // charcoal
-  N:  [0.13, 0.37, 0.90],  // blue
-  O:  [0.91, 0.13, 0.13],  // red
-  S:  [0.95, 0.80, 0.10],  // yellow
-  P:  [1.00, 0.50, 0.00],  // orange
-  F:  [0.20, 0.80, 0.20],  // green
-  CL: [0.12, 0.75, 0.12],  // green
-  BR: [0.60, 0.15, 0.10],  // brown-red
-  FE: [0.80, 0.40, 0.10],  // rust
-  MG: [0.30, 0.90, 0.30],  // bright green
-  CA: [0.10, 0.80, 0.80],  // cyan
-  ZN: [0.20, 0.50, 0.70],  // slate
-  default: [0.45, 0.45, 0.55], // grey-violet
+  H:  [0.90, 0.90, 0.90],
+  C:  [0.25, 0.25, 0.25],
+  N:  [0.13, 0.37, 0.90],
+  O:  [0.91, 0.13, 0.13],
+  S:  [0.95, 0.80, 0.10],
+  P:  [1.00, 0.50, 0.00],
+  F:  [0.20, 0.80, 0.20],
+  CL: [0.12, 0.75, 0.12],
+  BR: [0.60, 0.15, 0.10],
+  FE: [0.80, 0.40, 0.10],
+  MG: [0.30, 0.90, 0.30],
+  CA: [0.10, 0.80, 0.80],
+  ZN: [0.20, 0.50, 0.70],
+  default: [0.45, 0.45, 0.55],
 };
 
-/* Build a CPK element coloring scheme from the palette above.              */
 function elementColorScheme() {
   return Object.fromEntries(
     Object.entries(ELEMENT_COLORS).map(([el, rgb]) => [el, `rgb(${rgb.join(',')})`]),
   );
 }
 
-/* Apply a named preset to a component. The stage is needed to dispose shapes. */
+/* ── Apply a preset to a component ─────────────────────────────────────────── */
+/**
+ * @param component  NGL StructureComponent / RepresentationComponent
+ * @param preset     Active view preset
+ * @param stage      NGL Stage (passed for potential shape/shell use)
+ * @param nearLigand Selection string targeting atoms within 10A of any
+ *                   non-protein atom (ligand, waters, ions, metals).
+ *                   Passed as '' when no such atoms exist in the structure.
+ */
 async function applyPreset(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   component: any,
   preset: ViewPreset,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stage: any,
+  nearLigand: string,
 ) {
   component.removeAllRepresentations();
 
   const elemCol = elementColorScheme();
-  const atomColor = elemCol; // shorthand for atom rep colorScheme
+
+  /* ── Near-ligand protein selection ─────────────────────────────────────── */
+  // Protein atoms within 10A of ligand/waters/ions
+  const nearProt = nearLigand ? `(protein ${nearLigand})` : '';
 
   switch (preset) {
     /* ── Dynacule ────────────────────────────────────────────────────────── */
     case 'dynacule': {
-      // Thick ribbon for alpha-helices and beta-sheets — scale ≈ 12 hides tubes
+      // Thick ribbon for helices / sheets — scale 10-12 fully occludes tube
       component.addRepresentation('ribbon', {
-        colorScheme:  atomColor,
-        color:        'element',
-        opacity:      1,
-        mainChain:    ' helix',
+        color:       'element',
+        colorScheme: elemCol,
+        opacity:     1,
+        mainChain:   ' helix',
         subdiv:       6,
         smoothSheet:  true,
         scale:        12.0,
       });
       component.addRepresentation('ribbon', {
-        colorScheme:  atomColor,
-        color:        'element',
-        opacity:      1,
-        mainChain:    ' sheet',
+        color:       'element',
+        colorScheme: elemCol,
+        opacity:     1,
+        mainChain:   ' sheet',
         subdiv:       6,
         scale:        10.0,
       });
-      // Thin tube only for coils / turns — radius ≈ 0.12, much smaller than ribbon
+      // Thin tube for coils / turns — deliberately smaller than ribbon
       component.addRepresentation('tube', {
-        colorScheme:  atomColor,
-        color:        'element',
-        opacity:      1,
-        mainChain:    ' coil',
+        color:       'element',
+        colorScheme: elemCol,
+        opacity:     1,
+        mainChain:   ' coil',
         radius:       0.12,
         subdiv:       4,
       });
-      // Ball+stick for non-protein atoms (ligands, waters, ions)
+      // Ball+stick: non-protein atoms (ligands, waters, ions) — always visible
       component.addRepresentation('ball+stick', {
-        colorScheme:  atomColor,
         color:        'element',
-        radius:       0.3,
-        multipleBond: true,
-        opacity:      1,
-        Sele:         'not protein',
+        colorScheme:  elemCol,
+        radius:        0.3,
+        multipleBond:  true,
+        opacity:       1,
+        Sele:          'not protein',
       });
+      // Ball+stick: protein sidechains within 10A of ligand
+      if (nearProt) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.18,
+          multipleBond:  true,
+          opacity:        1,
+          Sele:          nearProt,
+        });
+      }
       break;
     }
 
     /* ── Cartoon ─────────────────────────────────────────────────────────── */
     case 'cartoon': {
       component.addRepresentation('cartoon', {
-        color:        'element',
-        colorScheme:  atomColor,
-        opacity:      1,
+        color:       'element',
+        colorScheme:  elemCol,
+        opacity:       1,
         mainChain:    ' helix',
-        subdiv:       6,
-        smoothSheet:  true,
-        scale:        5.0,
+        subdiv:        6,
+        smoothSheet:   true,
+        scale:         5.0,
       });
       component.addRepresentation('cartoon', {
-        color:        'element',
-        colorScheme:  atomColor,
-        opacity:      1,
+        color:       'element',
+        colorScheme:  elemCol,
+        opacity:       1,
         mainChain:    ' sheet',
-        subdiv:       6,
-        scale:        4.0,
+        subdiv:        6,
+        scale:         4.0,
       });
       component.addRepresentation('cartoon', {
-        color:        'element',
-        colorScheme:  atomColor,
-        opacity:      1,
+        color:       'element',
+        colorScheme:  elemCol,
+        opacity:       1,
         mainChain:    ' coil',
-        scale:        3.0,
+        scale:         3.0,
       });
+      // Non-protein
       component.addRepresentation('ball+stick', {
         color:        'element',
-        colorScheme:  atomColor,
-        radius:       0.3,
-        multipleBond: true,
+        colorScheme:  elemCol,
+        radius:        0.3,
+        multipleBond:  true,
         Sele:         'not protein',
       });
+      // Near-ligand protein sidechains
+      if (nearProt) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.18,
+          multipleBond:  true,
+          Sele:         nearProt,
+        });
+      }
       break;
     }
 
-    /* ── Ribbon ─────────────────────────────────────────────────────────── */
+    /* ── Ribbon ──────────────────────────────────────────────────────────── */
     case 'ribbon': {
       component.addRepresentation('ribbon', {
-        color:        'element',
-        colorScheme:  atomColor,
-        opacity:      1,
-        smoothSheet:  true,
-        subdiv:       8,
-        scale:        9.0,
+        color:       'element',
+        colorScheme:  elemCol,
+        opacity:       1,
+        smoothSheet:   true,
+        subdiv:        8,
+        scale:         9.0,
       });
       component.addRepresentation('ball+stick', {
         color:        'element',
-        colorScheme:  atomColor,
-        radius:       0.3,
-        multipleBond: true,
+        colorScheme:  elemCol,
+        radius:        0.3,
+        multipleBond:  true,
         Sele:         'not protein',
       });
+      if (nearProt) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.18,
+          multipleBond:  true,
+          Sele:         nearProt,
+        });
+      }
       break;
     }
 
@@ -167,41 +207,50 @@ async function applyPreset(
     case 'surface': {
       component.addRepresentation('surface', {
         color:            '#d4c5a9',
-        opacity:          0.82,
-        surfaceType:      'av',
-        surfaceSelection: 'protein',
-        contour:          false,
+        opacity:           0.82,
+        surfaceType:       'av',
+        surfaceSelection:  'protein',
+        contour:           false,
       });
       component.addRepresentation('ball+stick', {
         color:        'element',
-        colorScheme:  atomColor,
-        radius:       0.25,
-        multipleBond: true,
-        opacity:      1,
+        colorScheme:  elemCol,
+        radius:        0.25,
+        multipleBond:  true,
         Sele:         'not protein',
       });
+      if (nearProt) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.18,
+          multipleBond:  true,
+          Sele:         nearProt,
+        });
+      }
       break;
     }
 
     /* ── CPK ────────────────────────────────────────────────────────────── */
     case 'cpk': {
+      // Full CPK ball+stick for everything
       component.addRepresentation('ball+stick', {
         color:        'element',
-        colorScheme:  atomColor,
-        radius:       0.25,
-        multipleBond: true,
-        opacity:      1,
+        colorScheme:  elemCol,
+        radius:        0.25,
+        multipleBond:  true,
+        opacity:       1,
       });
       break;
     }
 
-    /* ── Backbone ──────────────────────────────────────────────────────── */
+    /* ── Backbone ───────────────────────────────────────────────────────── */
     case 'backbone': {
       component.addRepresentation('backbone', {
         color:        'element',
-        colorScheme:  atomColor,
-        opacity:       1,
-        radius:       0.3,
+        colorScheme:  elemCol,
+        opacity:        1,
+        radius:        0.3,
       });
       break;
     }
@@ -216,9 +265,12 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
   const containerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const stageRef = useRef<any>(null);
+
   const [pickingMode, setPickingMode] = useState<'distance' | 'angle' | 'torsion' | null>(null);
   const [nglReady, setNglReady] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadStatus, setLoadStatus] = useState<string>('');
+
   const {
     selectedAtom, setSelectedAtom,
     selectedMolecule,
@@ -226,7 +278,13 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
     trajFrame,
     viewPreset, setViewPreset,
   } = useStore();
-  const [loadStatus, setLoadStatus] = useState<string>('');
+
+  /**
+   * NGL selection string for all non-protein atoms in the loaded structure.
+   * Used to derive the "within 10A of ligand" protein sub-selection.
+   * Reset to '' on every new molecule load.
+   */
+  const ligandAtomsSel = useRef<string>('');
 
   /* ── NGL init ──────────────────────────────────────────────────────────── */
   useEffect(() => {
@@ -245,18 +303,19 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
         stage.handleResize();
         setNglReady(true);
 
-        // Load default sample (1crn) so the canvas isn't empty
         try {
           const comp = await stage.loadFile('rcsb://1crn', { defaultRepresentation: false });
           if (comp) {
-            await applyPreset(comp, 'dynacule', stage);
+            // 1crn is a pure protein — no near-ligand atoms
+            ligandAtomsSel.current = '';
+            await applyPreset(comp, 'dynacule', stage, '');
             comp.setName('default-sample');
             setTimeout(() => {
               try { stage.autoView(400); } catch { /* noop */ }
             }, 100);
           }
         } catch {
-          // Offline or CORS — empty canvas is acceptable
+          // offline / CORS — empty canvas is acceptable
         }
       } catch (err) {
         setLoadError('NGL requires WebGL. Please use a modern browser.');
@@ -286,7 +345,6 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
       setLoadStatus('Loading…');
       const { pdb } = await moleculeApi.getPdb(molId);
 
-      // Remove existing loaded components (keep the stage itself)
       stage.eachComponent((c: any) => {
         if (c.name?.startsWith('highlight-') || c.name === '__measurements__') return;
         stage.removeComponent(c);
@@ -294,9 +352,17 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
 
       const blob = new Blob([pdb], { type: 'text/plain' });
       const comp = await stage.loadFile(blob, { ext: 'pdb', defaultRepresentation: false });
+
       if (comp) {
-        await applyPreset(comp, viewPreset, stage);
+        comp.setName('loaded-molecule');
+
+        // ── Derive non-protein atom selection for near-ligand filter ─────
+        // 'not protein' captures ligands, waters, ions, metals, cofactors, etc.
+        ligandAtomsSel.current = 'not protein';
+
+        await applyPreset(comp, viewPreset, stage, ligandAtomsSel.current);
       }
+
       setLoadStatus('');
     } catch (err) {
       console.warn('Failed to load molecule:', err);
@@ -311,27 +377,21 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
     loadMolecule(selectedMolecule.id);
   }, [selectedMolecule, nglReady, loadMolecule]);
 
-  /* ── Re-apply preset when preset changes (without re-loading molecule) ── */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const lastPresetMolRef = useRef<any>(null);
+  /* ── Re-apply preset when it changes (no molecule reload needed) ──────── */
   useEffect(() => {
     if (!nglReady || !selectedMolecule) return;
     const stage = stageRef.current;
     if (!stage) return;
 
     stage.eachComponent((c: any) => {
-      if (
-        c.name === selectedMolecule.id?.toString() ||
-        c.name === 'loaded-molecule'
-      ) {
-        applyPreset(c, viewPreset, stage);
-        lastPresetMolRef.current = c;
+      if (c.name === 'loaded-molecule') {
+        applyPreset(c, viewPreset, stage, ligandAtomsSel.current);
       }
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewPreset, nglReady]);
 
-  /* ── Visualization command handling (docking overlay, MD traj, QM) ─────── */
+  /* ── Viz command handling (docking overlay, MD traj, QM) ───────────────── */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const overlayRef = useRef<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -369,15 +429,16 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
 
           if (comp) {
             comp.addRepresentation('ball+stick', {
-              color:        '#e67e22',
-              radius:       0.3,
-              multipleBond: true,
-              opacity:      1,
+              color:        'element',
+              colorScheme:  elementColorScheme(),
+              radius:        0.3,
+              multipleBond:  true,
+              opacity:       1,
             });
             comp.addRepresentation('label', {
-              labelType: 'text',
-              color:     '#e67e22',
-              fontSize:  0.5,
+              labelType:  'text',
+              color:      '#e67e22',
+              fontSize:   0.5,
               showOption: 0,
             });
             comp.setName('docking-ligand');
@@ -396,17 +457,19 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
           const comp = await stage.loadFile(blob, {
             ext:               'pdb',
             defaultRepresentation: false,
-            asTrajectory:     true,
+            asTrajectory:      true,
           });
 
           if (comp) {
             comp.addRepresentation('ribbon', {
-              color:   '#2980b9',
-              subdiv:  2,
-              opacity: 1,
+              color:   'element',
+              colorScheme: elementColorScheme(),
+              subdiv:   2,
+              opacity:  1,
             });
             comp.addRepresentation('ball+stick', {
-              color:  '#2980b9',
+              color:  'element',
+              colorScheme: elementColorScheme(),
               radius: 0.2,
               Sele:   'not protein',
             });
@@ -438,7 +501,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
     containerRef.current.style.cursor = pickingMode ? 'crosshair' : 'default';
   }, [pickingMode]);
 
-  /* ── Atom click → bidirectional binding to store ──────────────────────── */
+  /* ── Atom click → store ───────────────────────────────────────────────── */
   useEffect(() => {
     if (!stageRef.current || !nglReady) return;
     const stage = stageRef.current;
@@ -465,7 +528,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
     };
   }, [nglReady, setSelectedAtom]);
 
-  /* ── Selected-atom highlight (store → 3D viewer) ────────────────────── */
+  /* ── Selected-atom highlight ───────────────────────────────────────────── */
   useEffect(() => {
     if (!stageRef.current || !selectedAtom) return;
     const stage = stageRef.current;
@@ -480,7 +543,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
       const shape = new NGL.Shape('highlight-sphere');
       shape.addSphere(
         [selectedAtom.x, selectedAtom.y, selectedAtom.z],
-        [1, 1, 0],  // yellow
+        [1, 1, 0], // yellow
         0.5,
         'Selected atom',
       );
@@ -510,14 +573,14 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
     <div className={`relative ${className ?? ''}`}>
       <div ref={containerRef} className="w-full h-full" />
 
-      {/* ── Loading status ──────────────────────────────────────────────── */}
+      {/* ── Loading status ─────────────────────────────────────────────── */}
       {loadStatus && (
         <div className="absolute top-2 left-2 bg-navy/80 text-cream text-xs font-mono px-2 py-1 rounded">
           {loadStatus}
         </div>
       )}
 
-      {/* ── Empty state ──────────────────────────────────────────────────── */}
+      {/* ── Empty state ─────────────────────────────────────────────────── */}
       {nglReady && !selectedMolecule && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
@@ -529,7 +592,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
         </div>
       )}
 
-      {/* ── Preset toolbar (top-right, above picking) ───────────────────── */}
+      {/* ── Preset toolbar ──────────────────────────────────────────────── */}
       {nglReady && selectedMolecule && (
         <div className="absolute top-2 right-2 flex gap-1 flex-wrap max-w-[240px] justify-end">
           {presets.map(([preset, label]) => (
@@ -548,7 +611,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
         </div>
       )}
 
-      {/* ── Picking mode toolbar (below presets) ────────────────────────── */}
+      {/* ── Picking mode toolbar ──────────────────────────────────────── */}
       {nglReady && selectedMolecule && (
         <div className="absolute top-2 left-2 flex gap-1 text-xs font-mono">
           <button
@@ -578,7 +641,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
         </div>
       )}
 
-      {/* ── Picking mode badge ──────────────────────────────────────────── */}
+      {/* ── Picking mode badge ────────────────────────────────────────── */}
       {pickingMode && (
         <div className="absolute top-2 left-2 mt-8 bg-amber-400 text-navy text-xs font-mono px-2 py-1 rounded">
           Picking: {pickingMode}
