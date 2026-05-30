@@ -133,7 +133,7 @@ function JobDetailCard({ jobId, onClose }: { jobId: number; onClose: () => void 
 }
 
 export default function JobPanel() {
-  const { jobs, setJobs, jobStats, setJobStats, selectedJob, setSelectedJob } = useStore();
+  const { jobs, setJobs, jobStats, setJobStats, selectedJob, setSelectedJob, setVizCommand } = useStore();
   const [expandedJobId, setExpandedJobId] = useState<number | null>(null);
   const [wsConnected, setWsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
@@ -238,7 +238,9 @@ export default function JobPanel() {
             <li key={j.id}>
               <div
                 onClick={() => toggleExpand(j.id)}
-                className="px-4 py-2.5 cursor-pointer border-b border-gold/10 transition-colors hover:bg-gold/5"
+                className={`px-4 py-2.5 cursor-pointer border-b border-gold/10 transition-colors hover:bg-gold/5 ${
+                  selectedJob?.id === j.id ? 'bg-gold/15' : ''
+                }`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 min-w-0">
@@ -246,14 +248,31 @@ export default function JobPanel() {
                     <span className="text-[10px] font-mono text-navy/50 uppercase">{j.type}</span>
                     <StatusBadge status={j.status} />
                   </div>
-                  <span className="text-[9px] font-mono text-navy/30 shrink-0">
-                    {j.created_at
-                      ? new Date(j.created_at).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
-                      : ''}
-                  </span>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {j.status === 'completed' && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedJob(selectedJob?.id === j.id ? null : j);
+                        }}
+                        className={`text-[9px] font-mono px-1.5 py-0.5 rounded border transition-colors ${
+                          selectedJob?.id === j.id
+                            ? 'bg-gold/30 text-navy border-gold/50'
+                            : 'text-navy/40 border-transparent hover:text-navy hover:border-gold/30'
+                        }`}
+                      >
+                        Show
+                      </button>
+                    )}
+                    <span className="text-[9px] font-mono text-navy/30">
+                      {j.created_at
+                        ? new Date(j.created_at).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
+                        : ''}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Progress bar for processing jobs */}

@@ -23,7 +23,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
   const [pickingMode, setPickingMode] = useState<'distance' | 'angle' | 'torsion' | null>(null);
   const [nglReady, setNglReady] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const { selectedAtom, setSelectedAtom, selectedMolecule } = useStore();
+  const { selectedAtom, setSelectedAtom, selectedMolecule, vizCommand, setVizCommand, trajFrame } = useStore();
   const [loadStatus, setLoadStatus] = useState<string>('');
   const stageInitRef = useRef(false);
 
@@ -123,6 +123,108 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
     if (!nglReady || !selectedMolecule) return;
     loadMolecule(selectedMolecule.id);
   }, [selectedMolecule, nglReady, loadMolecule]);
+
+  /* ── Visualization command handling (docking overlay, MD traj, QM) ── */
+  const overlayRef = useRef<any>(null);
+  const trajCompRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (!nglReady || !stageRef.current) return;
+    const stage = stageRef.current;
+
+    if (!vizCommand) return;
+
+    const handleCommand = async () => {
+      try {
+        if (vizCommand.type === 'clear' || vizCommand.type === 'qm') {
+          // Remove overlay/trajectory components for clear or QM
+          if (overlayRef.current) {
+            try { stage.removeComponent(overlayRef.current); } catch {}
+            overlayRef.current = null;
+          }
+          if (trajCompRef.current) {
+            try { stage.removeComponent(trajCompRef.current); } catch {}
+            trajCompRef.current = null;
+          }
+          setLoadStatus('');
+          return;
+        }
+
+        if (vizCommand.type === 'docking' && vizCommand.pdbData) {
+          // Remove previous overlay if any
+          if (overlayRef.current) {
+            try { stage.removeComponent(overlayRef.current); } catch {}
+          }
+
+          setLoadStatus('Loading ligand...');
+          const blob = new Blob([vizCommand.pdbData], { type: 'text/plain' });
+          const comp = await stage.loadFile(blob, { ext: 'pdb', defaultRepresentation: false });
+
+          if (comp) {
+            // Ball+stick for the ligand with a distinct color
+            comp.addRepresentation('ball+stick', {
+              color: '#e67e22', // orange ligand
+              radius: 0.3,
+              multipleBond: true,
+            });
+            comp.addRepresentation('label', {
+              labelType: 'text',
+              color: '#e67e22',
+              fontsize: 0.5,
+              showOption: 0,
+            });
+            comp.name = 'docking-ligand';
+            overlayRef.current = comp;
+          }
+          setLoadStatus('');
+        }
+
+        if (vizCommand.type === 'md' && vizCommand.pdbData) {
+          // Remove previous trajectory if any
+          if (trajCompRef.current) {
+            try { stage.removeComponent(trajCompRef.current); } catch {}
+          }
+
+          setLoadStatus('Loading trajectory...');
+          // Load multi-model PDB as trajectory
+          const blob = new Blob([vizCommand.pdbData], { type: 'text/plain' });
+          const comp = await stage.loadFile(blob, {
+            ext: 'pdb',
+            defaultRepresentation: false,
+            asTrajectory: true,
+          });
+
+          if (comp) {
+            comp.addRepresentation('ribbon', {
+              color: '#2980b9', // blue trajectory
+              subdiv: 2,
+            });
+            comp.addRepresentation('ball+stick', {
+              color: '#2980b9',
+              radius: 0.2,
+              sele: 'not protein',
+            });
+            comp.name = 'md-trajectory';
+            trajCompRef.current = comp;
+          }
+          setLoadStatus('');
+        }
+      } catch (err) {
+        console.warn('Viz command failed:', err);
+        setLoadStatus('Viz error');
+      }
+    };
+
+    handleCommand();
+  }, [nglReady, vizCommand]);
+
+  /* ── Trajectory frame control ────────────────────────────────────── */
+  useEffect(() => {
+    if (!trajCompRef.current) return;
+    try {
+      trajCompRef.current.setFrame(trajFrame);
+    } catch {}
+  }, [trajFrame]);
 
   /* ── Picking mode cursor ─────────────────────────────────────────── */
   useEffect(() => {

@@ -81,7 +81,7 @@ def docking_task(self, job_id: int, ligand_smiles: str, receptor_pdb_path: str,
 # ── Molecular Dynamics Task ─────────────────────────────────────────────
 
 @celery_app.task(bind=True)
-def md_task(self, job_id: int, pdb_file: str, forcefield: str = 'amber14-all.xml',
+def md_task(self, job_id: int, pdb_content: str, forcefield: str = 'amber14-all.xml',
             solvent: str = 'tip3p', minimization_steps: int = 500,
             production_steps: int = 50000, temperature: float = 300.0):
     """Run molecular dynamics simulation using OpenMM.
@@ -131,7 +131,7 @@ def md_task(self, job_id: int, pdb_file: str, forcefield: str = 'amber14-all.xml
 def qm_task(self, job_id: int, molecule_data: dict, task_type: str = 'single_point',
             theory: str = 'b3lyp', basis_set: str = '6-31g*',
             charge: int = 0, multiplicity: int = 1,
-            software: str = 'psi4'):
+            software: str = 'psi4', **kwargs):
     """Run quantum mechanics calculation using Psi4 or ORCA.
 
     Runs on Modal.com GPU. The API container only dispatches and waits.

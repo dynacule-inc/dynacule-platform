@@ -5,6 +5,7 @@ import MolecularViewer from '@/components/MolecularViewer';
 import MoleculePanel from '@/components/MoleculePanel';
 import MoleculeDetailPanel from '@/components/MoleculeDetailPanel';
 import JobPanel from '@/components/JobPanel';
+import ResultsViewer from '@/components/ResultsViewer';
 import CommandPalette from '@/components/CommandPalette';
 import StatusBar from '@/components/StatusBar';
 import { useStore } from '@/lib/store';
@@ -42,6 +43,7 @@ export default function Home() {
           </div>
           <CommandPalette />
         </div>
+        <ResultsViewer />
         <MolecularViewer className="flex-1" projectId={selectedProjectId} />
         <MoleculeDetailPanel />
       </main>

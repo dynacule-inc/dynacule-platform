@@ -4,8 +4,6 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional
 import uuid
-import os
-import tempfile
 from app.core.celery import celery_app
 from app.worker.tasks import docking_task
 from app.core.database import SessionLocal

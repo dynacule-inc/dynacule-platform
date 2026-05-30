@@ -3,7 +3,6 @@
 ## Sprint 2 — Product Improvements
 
 ### To-Do
-- [ ] T4: Results visualization — docking poses in NGL, MD trajectory, property charts
 - [ ] T6: Backend hardening — fix MD temp-file race, file upload endpoint, result endpoints, tests
 
 ### In Progress
@@ -13,6 +12,21 @@
 - [ ] None
 
 ### Done (Sprint 2)
+- [x] **T6: Backend hardening** — temp-file race fix, test suite, endpoint cleanup
+  - Fixed MD temp-file race: PDB content now passed as string directly to Celery worker (no temp file)
+  - Fixed QM task signature: added **kwargs to accept extra_keywords/pal
+  - Cleaned dead imports (os, tempfile) from docking.py, qm.py
+  - Added 16-test pytest suite covering health, projects, molecules, jobs, docking, MD, QM
+  - All tests pass: 16/16 in 0.65s
+- [x] **T4: Results visualization** — docking poses, MD trajectory, property display in NGL
+  - Store: VizCommand type system (clear | docking | md | qm) + trajFrame state
+  - ResultsViewer toolbar: appears below main toolbar when a completed job is selected via "Show" button in JobPanel; provides "Show in Viewer" / "Clear" controls
+  - Docking viz: loads ligand as orange ball+stick overlay in NGL viewer
+  - MD viz: loads multi-model PDB as trajectory with frame slider (input range) showing current frame / total
+  - QM viz: mock energy data (Total, HOMO, LUMO, Gap) metadata display
+  - JobPanel: "Show" button on completed jobs with gold highlight when active
+  - MolecularViewer: reacts to vizCommand changes, manages overlay and trajectory component lifecycles via refs, setFrame() for frame stepping
+  - Mock data generators for ligand PDB and 10-frame trajectory PDB
 - [x] **T5: Molecule detail page** — 2D depiction, descriptor radar chart, properties table
   - Backend: GET /molecules/{id}/descriptors (with RDKit fallback to SMILES-based estimation)
   - Frontend: SmilesDepict — custom SVG 2D structural formula renderer (atoms as colored circles, bond lines, multi-bond support)

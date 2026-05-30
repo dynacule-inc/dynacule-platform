@@ -1,11 +1,9 @@
 """Router for quantum mechanics-related endpoints."""
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List
 import uuid
-import os
-import tempfile
 import json
 from app.core.celery import celery_app
 from app.worker.tasks import qm_task

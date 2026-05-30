@@ -19,6 +19,18 @@ interface AtomSelection {
   z: number;
 }
 
+export interface VizCommand {
+  type: 'clear' | 'docking' | 'md' | 'qm';
+  /** PDB data for docking ligand or MD trajectory (multi-model PDB) */
+  pdbData?: string;
+  /** Number of frames for MD trajectory */
+  numFrames?: number;
+  /** Label for the overlay */
+  label?: string;
+  /** Energy data for QM results */
+  energyData?: { label: string; value: number; unit: string }[];
+}
+
 interface State {
   // Project state
   projects: Project[];
@@ -40,6 +52,12 @@ interface State {
   addOrUpdateJob: (job: JobSummary) => void;
   setJobStats: (stats: JobStats | null) => void;
   setSelectedJob: (job: JobSummary | null) => void;
+
+  // Results visualization state
+  vizCommand: VizCommand | null;
+  trajFrame: number;
+  setVizCommand: (cmd: VizCommand | null) => void;
+  setTrajFrame: (frame: number) => void;
 
   // Atom picking state
   selectedAtom: AtomSelection | null;
@@ -80,6 +98,12 @@ export const useStore = create<State>((set) => ({
     }),
   setJobStats: (jobStats) => set({ jobStats }),
   setSelectedJob: (selectedJob) => set({ selectedJob }),
+
+  // Results visualization
+  vizCommand: null,
+  trajFrame: 0,
+  setVizCommand: (vizCommand) => set({ vizCommand, trajFrame: 0 }),
+  setTrajFrame: (trajFrame) => set({ trajFrame }),
 
   // Atom picking
   selectedAtom: null,
