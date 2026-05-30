@@ -1,0 +1,7 @@
+# ── Dynacule Backend: Modal GPU Dependencies ──────────────────────────
+# These packages are only installed inside Modal.com GPU containers.
+# DO NOT add these to requirements.txt — they will fail on slim Docker.
+
+rdkit-pypi==2023.9.4
+openmm==8.1.1
+numpy==1.26.4

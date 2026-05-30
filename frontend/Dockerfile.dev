@@ -1,0 +1,18 @@
+# ── Frontend Development Dockerfile ──────────────────────────────────
+# Hot-reload development server. NOT for production (use Dockerfile).
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies first (layer cache)
+COPY package.json package-lock.json* ./
+RUN npm install
+
+# Source is mounted via volume for hot-reload
+COPY . .
+
+EXPOSE 3000
+
+ENV NEXT_TELEMETRY_DISABLED=1
+
+CMD ["npm", "run", "dev"]

@@ -1,0 +1,67 @@
+# ── Dynacule Docker Compose ─────────────────────────────────────────────
+# Development stack: frontend (Next.js) + backend (FastAPI) + Redis
+# Heavy compute (OpenMM, Vina, Psi4) runs on Modal.com GPUs — not here.
+
+services:
+  # ── Frontend: Next.js with hot-reload ──────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules       # container node_modules, not host
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+      - NEXT_PUBLIC_WS_URL=ws://localhost:8000/ws/status
+      - CHOKIDAR_USEPOLLING=true  # file watching in Docker
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  # ── Backend: FastAPI API gateway ───────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - DATABASE_URL=sqlite:///./dynacule.db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - MODAL_API_TOKEN=${MODAL_API_TOKEN:-}
+      - ENVIRONMENT=development
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c",
+        "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+
+  # ── Redis: message broker + WebSocket pub/sub ─────────────────────
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  redis_data:

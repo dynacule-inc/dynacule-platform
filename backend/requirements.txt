@@ -1,0 +1,17 @@
+# ── Dynacule Backend: Container Dependencies ──────────────────────────
+# These are the ONLY packages installed in the Docker container.
+# Heavy compute packages (openmm, rdkit-pypi, psi4) run on Modal.com GPUs.
+# The container is just an API gateway + Celery dispatcher.
+
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+python-dotenv==1.0.1
+celery[redis]==5.4.0
+redis==5.0.7
+websockets==12.0
+pydantic==2.7.4
+pydantic-settings==2.3.4
+sqlalchemy==2.0.31
+aiosqlite==0.20.0
+httpx==0.27.0
+python-multipart==0.0.29
