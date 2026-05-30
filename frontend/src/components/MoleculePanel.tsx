@@ -111,7 +111,7 @@ export default function MoleculePanel() {
           No molecules yet.
         </p>
       ) : (
-        <ul className="flex-1 overflow-auto">
+        <ul className="flex-1 overflow-auto max-h-48">
           {molecules.map((m) => (
             <li
               key={m.id}

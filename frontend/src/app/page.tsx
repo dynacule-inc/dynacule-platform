@@ -21,10 +21,16 @@ export default function Home() {
           <h1 className="text-lg font-semibold text-navy tracking-tight">Dynacule</h1>
           <p className="text-xs text-navy/50 font-mono">Molecular Design Suite</p>
         </header>
-        <div className="flex-1 overflow-auto flex flex-col">
-          <ProjectTable />
-          <MoleculePanel />
-          <JobPanel />
+        <div className="flex-1 overflow-auto flex flex-col min-h-0">
+          <div className="shrink-0 max-h-[30%] min-h-0 flex flex-col">
+            <ProjectTable />
+          </div>
+          <div className="flex-1 min-h-0 flex flex-col border-t border-gold/10">
+            <MoleculePanel />
+          </div>
+          <div className="shrink-0 max-h-[30%] min-h-0 flex flex-col border-t border-gold/10">
+            <JobPanel />
+          </div>
         </div>
       </aside>
 

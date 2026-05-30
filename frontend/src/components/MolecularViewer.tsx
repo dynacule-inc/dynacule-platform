@@ -52,6 +52,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
           if (comp) {
             comp.addRepresentation('ribbon', { color: '#2a2a2a', subdiv: 6, smoothSheet: true, scale: 1.5 });
             comp.addRepresentation('tube', { color: '#2a2a2a', radius: 0.15, subdiv: 3 });
+            comp.addRepresentation('ball+stick', { color: '#2a2a2a', radius: 0.3, multipleBond: true, sele: 'not protein' });
             comp.setName('default-sample');
             // Auto-center with a short delay for representation rendering
             setTimeout(() => {
@@ -100,7 +101,15 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
       subdiv: 3,
     });
 
-    // Ball+stick for ligands/non-polymer — only if there are small molecules
+    // Ball+stick for non-protein atoms (small molecules, ligands, waters)
+    component.addRepresentation('ball+stick', {
+      color: '#2a2a2a',
+      radius: 0.3,
+      multipleBond: true,
+      sele: 'not protein',
+    });
+
+    // Auto-center with a short delay for representation rendering
     setTimeout(() => {
       try { component.autoView(400); } catch {}
     }, 100);
