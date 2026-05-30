@@ -44,7 +44,22 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
         });
 
         stageRef.current = stage;
+        // Handle resize to pick up container dimensions
+        stage.handleResize();
         setNglReady(true);
+
+        // Load default sample (1crn) so the canvas isn't empty
+        try {
+          const comp = await stage.loadFile('rcsb://1crn', { defaultRepresentation: false });
+          if (comp) {
+            comp.addRepresentation('ribbon', { color: 'white', subdiv: 3, smoothSheet: true });
+            comp.addRepresentation('tube', { color: 'white', radius: 0.15, subdiv: 3 });
+            comp.name = 'default-sample';
+            stage.autoView(300);
+          }
+        } catch {
+          // Offline or CORS — empty canvas is acceptable
+        }
       } catch (err) {
         setLoadError('NGL requires WebGL. Please use a modern browser.');
         console.warn('NGL load failed:', err);
