@@ -25,12 +25,10 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
   const [loadError, setLoadError] = useState<string | null>(null);
   const { selectedAtom, setSelectedAtom, selectedMolecule, vizCommand, setVizCommand, trajFrame } = useStore();
   const [loadStatus, setLoadStatus] = useState<string>('');
-  const stageInitRef = useRef(false);
 
   /* ── Load NGL on mount (client-side only) ────────────────────────── */
   useEffect(() => {
-    if (!containerRef.current || stageInitRef.current) return;
-    stageInitRef.current = true;
+    if (!containerRef.current || stageRef.current) return;
     let destroyed = false;
 
     const initNGL = async () => {
