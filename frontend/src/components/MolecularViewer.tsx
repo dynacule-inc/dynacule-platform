@@ -26,6 +26,32 @@ const PRESET_LABELS: Record<ViewPreset, string> = {
   backbone: 'Backbone',
 };
 
+/* ── Element color palette (CPK-inspired) ────────────────────────────────── */
+/* Used for 'element' colorScheme on atom-based representations.              */
+const ELEMENT_COLORS: Record<string, [number, number, number]> = {
+  H:  [0.90, 0.90, 0.90],  // white
+  C:  [0.25, 0.25, 0.25],  // charcoal
+  N:  [0.13, 0.37, 0.90],  // blue
+  O:  [0.91, 0.13, 0.13],  // red
+  S:  [0.95, 0.80, 0.10],  // yellow
+  P:  [1.00, 0.50, 0.00],  // orange
+  F:  [0.20, 0.80, 0.20],  // green
+  CL: [0.12, 0.75, 0.12],  // green
+  BR: [0.60, 0.15, 0.10],  // brown-red
+  FE: [0.80, 0.40, 0.10],  // rust
+  MG: [0.30, 0.90, 0.30],  // bright green
+  CA: [0.10, 0.80, 0.80],  // cyan
+  ZN: [0.20, 0.50, 0.70],  // slate
+  default: [0.45, 0.45, 0.55], // grey-violet
+};
+
+/* Build a CPK element coloring scheme from the palette above.              */
+function elementColorScheme() {
+  return Object.fromEntries(
+    Object.entries(ELEMENT_COLORS).map(([el, rgb]) => [el, `rgb(${rgb.join(',')})`]),
+  );
+}
+
 /* Apply a named preset to a component. The stage is needed to dispose shapes. */
 async function applyPreset(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -36,41 +62,43 @@ async function applyPreset(
 ) {
   component.removeAllRepresentations();
 
-  const atomColor   = '#2a2a2a';
-  const helixColor  = '#2a2a2a';
-  const sheetColor  = '#2a2a2a';
-  const coilColor   = '#2a2a2a';
+  const elemCol = elementColorScheme();
+  const atomColor = elemCol; // shorthand for atom rep colorScheme
 
   switch (preset) {
     /* ── Dynacule ────────────────────────────────────────────────────────── */
     case 'dynacule': {
       // Thick ribbon for alpha-helices and beta-sheets — scale ≈ 12 hides tubes
       component.addRepresentation('ribbon', {
-        color:       helixColor,
-        opacity:     1,
-        mainChain:   ' helix',
-        subdiv:      6,
-        smoothSheet: true,
-        scale:       12.0,
+        colorScheme:  atomColor,
+        color:        'element',
+        opacity:      1,
+        mainChain:    ' helix',
+        subdiv:       6,
+        smoothSheet:  true,
+        scale:        12.0,
       });
       component.addRepresentation('ribbon', {
-        color:     sheetColor,
-        opacity:   1,
-        mainChain: ' sheet',
-        subdiv:    6,
-        scale:     10.0,
+        colorScheme:  atomColor,
+        color:        'element',
+        opacity:      1,
+        mainChain:    ' sheet',
+        subdiv:       6,
+        scale:        10.0,
       });
       // Thin tube only for coils / turns — radius ≈ 0.12, much smaller than ribbon
       component.addRepresentation('tube', {
-        color:     coilColor,
-        opacity:   1,
-        mainChain: ' coil',
-        radius:    0.12,
-        subdiv:    4,
+        colorScheme:  atomColor,
+        color:        'element',
+        opacity:      1,
+        mainChain:    ' coil',
+        radius:       0.12,
+        subdiv:       4,
       });
       // Ball+stick for non-protein atoms (ligands, waters, ions)
       component.addRepresentation('ball+stick', {
-        color:        atomColor,
+        colorScheme:  atomColor,
+        color:        'element',
         radius:       0.3,
         multipleBond: true,
         opacity:      1,
@@ -82,28 +110,32 @@ async function applyPreset(
     /* ── Cartoon ─────────────────────────────────────────────────────────── */
     case 'cartoon': {
       component.addRepresentation('cartoon', {
-        color:       '#3b82f6',
-        opacity:     1,
-        mainChain:   ' helix',
-        subdiv:      6,
-        smoothSheet: true,
+        color:        'element',
+        colorScheme:  atomColor,
+        opacity:      1,
+        mainChain:    ' helix',
+        subdiv:       6,
+        smoothSheet:  true,
         scale:        5.0,
       });
       component.addRepresentation('cartoon', {
-        color:     '#22c55e',
-        opacity:   1,
-        mainChain: ' sheet',
-        subdiv:    6,
-        scale:      4.0,
+        color:        'element',
+        colorScheme:  atomColor,
+        opacity:      1,
+        mainChain:    ' sheet',
+        subdiv:       6,
+        scale:        4.0,
       });
       component.addRepresentation('cartoon', {
-        color:     '#94a3b8',
-        opacity:   1,
-        mainChain: ' coil',
-        scale:      3.0,
+        color:        'element',
+        colorScheme:  atomColor,
+        opacity:      1,
+        mainChain:    ' coil',
+        scale:        3.0,
       });
       component.addRepresentation('ball+stick', {
-        color:        '#2a2a2a',
+        color:        'element',
+        colorScheme:  atomColor,
         radius:       0.3,
         multipleBond: true,
         Sele:         'not protein',
@@ -114,14 +146,16 @@ async function applyPreset(
     /* ── Ribbon ─────────────────────────────────────────────────────────── */
     case 'ribbon': {
       component.addRepresentation('ribbon', {
-        color:       '#7c3aed',
-        opacity:     1,
-        smoothSheet: true,
-        subdiv:      8,
+        color:        'element',
+        colorScheme:  atomColor,
+        opacity:      1,
+        smoothSheet:  true,
+        subdiv:       8,
         scale:        9.0,
       });
       component.addRepresentation('ball+stick', {
-        color:        '#2a2a2a',
+        color:        'element',
+        colorScheme:  atomColor,
         radius:       0.3,
         multipleBond: true,
         Sele:         'not protein',
@@ -132,14 +166,15 @@ async function applyPreset(
     /* ── Surface ────────────────────────────────────────────────────────── */
     case 'surface': {
       component.addRepresentation('surface', {
-        color:           '#d4c5a9',
-        opacity:         0.85,
-        surfaceType:     'av',
+        color:            '#d4c5a9',
+        opacity:          0.82,
+        surfaceType:      'av',
         surfaceSelection: 'protein',
-        contour:         false,
+        contour:          false,
       });
       component.addRepresentation('ball+stick', {
-        color:        '#2a2a2a',
+        color:        'element',
+        colorScheme:  atomColor,
         radius:       0.25,
         multipleBond: true,
         opacity:      1,
@@ -151,7 +186,8 @@ async function applyPreset(
     /* ── CPK ────────────────────────────────────────────────────────────── */
     case 'cpk': {
       component.addRepresentation('ball+stick', {
-        color:        '#c9a84c',
+        color:        'element',
+        colorScheme:  atomColor,
         radius:       0.25,
         multipleBond: true,
         opacity:      1,
@@ -162,9 +198,10 @@ async function applyPreset(
     /* ── Backbone ──────────────────────────────────────────────────────── */
     case 'backbone': {
       component.addRepresentation('backbone', {
-        color:   '#2a2a2a',
-        opacity:  1,
-        radius:   0.3,
+        color:        'element',
+        colorScheme:  atomColor,
+        opacity:       1,
+        radius:       0.3,
       });
       break;
     }
