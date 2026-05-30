@@ -72,13 +72,13 @@ async function applyPreset(
 
   /* ── Near-ligand protein selection ─────────────────────────────────────── */
   // Protein atoms within 10A of ligand/waters/ions
-  const nearProt = nearLigand ? `(protein ${nearLigand})` : '';
+  const nearProt = nearLigand ? `(protein within 10A of (${nearLigand}))` : '';
 
   switch (preset) {
     /* ── Dynacule ────────────────────────────────────────────────────────── */
     case 'dynacule': {
-      // Thick ribbon for helices / sheets — scale 10-12 fully occludes tube
-      component.addRepresentation('ribbon', {
+      // Thick cartoon for helices / sheets — scale 10-12 fully occludes tube
+      component.addRepresentation('cartoon', {
         color:       'element',
         colorScheme: elemCol,
         opacity:     1,
@@ -87,7 +87,7 @@ async function applyPreset(
         smoothSheet:  true,
         scale:        12.0,
       });
-      component.addRepresentation('ribbon', {
+      component.addRepresentation('cartoon', {
         color:       'element',
         colorScheme: elemCol,
         opacity:     1,
@@ -95,7 +95,7 @@ async function applyPreset(
         subdiv:       6,
         scale:        10.0,
       });
-      // Thin tube for coils / turns — deliberately smaller than ribbon
+      // Thin tube for coils / turns — deliberately smaller than cartoon
       component.addRepresentation('tube', {
         color:       'element',
         colorScheme: elemCol,
@@ -356,7 +356,6 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
       if (comp) {
         comp.setName('loaded-molecule');
 
-        // ── Derive non-protein atom selection for near-ligand filter ─────
         // 'not protein' captures ligands, waters, ions, metals, cofactors, etc.
         ligandAtomsSel.current = 'not protein';
 
