@@ -71,49 +71,54 @@ async function applyPreset(
   const elemCol = elementColorScheme();
 
   /* ── Near-ligand protein selection ─────────────────────────────────────── */
-  // Protein atoms within 10A of ligand/waters/ions
+  // Protein atoms within 10A of ligand/non-water non-protein atoms
   const nearProt = nearLigand ? `(protein within 10A of (${nearLigand}))` : '';
+
+  /* ── Non-water non-protein selection (actual small-molecule ligands) ──────── */
+  // Excludes HOH (waters), NA/CL/K/MG/CA/ZN/FE/... (ions)
+  const ligandOnly = 'not (protein or HOH or NA or CL or K or MG or CA or ZN or FE or MN or CO or CU)';
 
   switch (preset) {
     /* ── Dynacule ────────────────────────────────────────────────────────── */
     case 'dynacule': {
-      // Thick cartoon for helices / sheets — scale 10-12 fully occludes tube
+      // CA-only cartoon: helices — scale 10-12 occludes any underlying CA tube
       component.addRepresentation('cartoon', {
         color:       'element',
         colorScheme: elemCol,
         opacity:     1,
-        mainChain:   ' helix',
-        subdiv:       6,
-        smoothSheet:  true,
-        scale:        12.0,
+        Sele:        'CA and helix',
+        smoothSheet: true,
+        subdiv:      6,
+        scale:       12.0,
       });
+      // CA-only cartoon: sheets
       component.addRepresentation('cartoon', {
         color:       'element',
         colorScheme: elemCol,
         opacity:     1,
-        mainChain:   ' sheet',
-        subdiv:       6,
-        scale:        10.0,
+        Sele:        'CA and sheet',
+        subdiv:      6,
+        scale:       10.0,
       });
-      // Thin tube for coils / turns — deliberately smaller than cartoon
+      // CA-only tube: coils — thin, deliberately smaller than cartoon
       component.addRepresentation('tube', {
         color:       'element',
         colorScheme: elemCol,
         opacity:     1,
-        mainChain:   ' coil',
-        radius:       0.12,
-        subdiv:       4,
+        Sele:        'CA and coil',
+        radius:      0.12,
+        subdiv:      4,
       });
-      // Ball+stick: non-protein atoms (ligands, waters, ions) — always visible
+      // Ball+stick: small-molecule ligands only (no waters, no ions)
       component.addRepresentation('ball+stick', {
         color:        'element',
         colorScheme:  elemCol,
         radius:        0.3,
         multipleBond:  true,
         opacity:       1,
-        Sele:          'not protein',
+        Sele:         ligandOnly,
       });
-      // Ball+stick: protein sidechains within 10A of ligand
+      // Ball+stick: protein atoms within 10A of ligand (sidechains + CA)
       if (nearProt) {
         component.addRepresentation('ball+stick', {
           color:        'element',
@@ -121,7 +126,7 @@ async function applyPreset(
           radius:        0.18,
           multipleBond:  true,
           opacity:        1,
-          Sele:          nearProt,
+          Sele:         nearProt,
         });
       }
       break;
@@ -131,37 +136,35 @@ async function applyPreset(
     case 'cartoon': {
       component.addRepresentation('cartoon', {
         color:       'element',
-        colorScheme:  elemCol,
-        opacity:       1,
-        mainChain:    ' helix',
-        subdiv:        6,
-        smoothSheet:   true,
-        scale:         5.0,
+        colorScheme: elemCol,
+        opacity:      1,
+        Sele:        'CA and helix',
+        smoothSheet: true,
+        subdiv:       6,
+        scale:        5.0,
       });
       component.addRepresentation('cartoon', {
         color:       'element',
-        colorScheme:  elemCol,
-        opacity:       1,
-        mainChain:    ' sheet',
-        subdiv:        6,
-        scale:         4.0,
+        colorScheme: elemCol,
+        opacity:      1,
+        Sele:        'CA and sheet',
+        subdiv:       6,
+        scale:        4.0,
       });
       component.addRepresentation('cartoon', {
         color:       'element',
-        colorScheme:  elemCol,
-        opacity:       1,
-        mainChain:    ' coil',
-        scale:         3.0,
+        colorScheme: elemCol,
+        opacity:      1,
+        Sele:        'CA and coil',
+        scale:        3.0,
       });
-      // Non-protein
       component.addRepresentation('ball+stick', {
         color:        'element',
         colorScheme:  elemCol,
         radius:        0.3,
         multipleBond:  true,
-        Sele:         'not protein',
+        Sele:         ligandOnly,
       });
-      // Near-ligand protein sidechains
       if (nearProt) {
         component.addRepresentation('ball+stick', {
           color:        'element',
@@ -178,18 +181,19 @@ async function applyPreset(
     case 'ribbon': {
       component.addRepresentation('ribbon', {
         color:       'element',
-        colorScheme:  elemCol,
-        opacity:       1,
-        smoothSheet:   true,
-        subdiv:        8,
-        scale:         9.0,
+        colorScheme: elemCol,
+        opacity:      1,
+        Sele:        'CA',
+        smoothSheet: true,
+        subdiv:       8,
+        scale:        9.0,
       });
       component.addRepresentation('ball+stick', {
         color:        'element',
         colorScheme:  elemCol,
         radius:        0.3,
         multipleBond:  true,
-        Sele:         'not protein',
+        Sele:         ligandOnly,
       });
       if (nearProt) {
         component.addRepresentation('ball+stick', {
@@ -207,7 +211,7 @@ async function applyPreset(
     case 'surface': {
       component.addRepresentation('surface', {
         color:            '#d4c5a9',
-        opacity:           0.82,
+        opacity:          0.82,
         surfaceType:       'av',
         surfaceSelection:  'protein',
         contour:           false,
@@ -217,7 +221,7 @@ async function applyPreset(
         colorScheme:  elemCol,
         radius:        0.25,
         multipleBond:  true,
-        Sele:         'not protein',
+        Sele:         ligandOnly,
       });
       if (nearProt) {
         component.addRepresentation('ball+stick', {
@@ -233,13 +237,13 @@ async function applyPreset(
 
     /* ── CPK ────────────────────────────────────────────────────────────── */
     case 'cpk': {
-      // Full CPK ball+stick for everything
       component.addRepresentation('ball+stick', {
         color:        'element',
         colorScheme:  elemCol,
         radius:        0.25,
         multipleBond:  true,
         opacity:       1,
+        Sele:         'not protein',
       });
       break;
     }
@@ -249,8 +253,8 @@ async function applyPreset(
       component.addRepresentation('backbone', {
         color:        'element',
         colorScheme:  elemCol,
-        opacity:        1,
-        radius:        0.3,
+        opacity:       1,
+        radius:       0.3,
       });
       break;
     }
