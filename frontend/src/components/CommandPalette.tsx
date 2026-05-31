@@ -209,56 +209,56 @@ export default function CommandPalette() {
 
         {/* ── SMILES Input Form ───────────────────────────────────── */}
         {(view.stage === 'smiles-input') && (
-          <div className="bg-navy border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
+          <div className="bg-cream/20 backdrop-blur-xl border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
             {renderSmilesForm('create')}
           </div>
         )}
 
         {/* ── Descriptors Input Form ───────────────────────────────── */}
         {(view.stage === 'descriptors-input') && (
-          <div className="bg-navy border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
+          <div className="bg-cream/20 backdrop-blur-xl border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
             {renderSmilesForm('descriptors')}
           </div>
         )}
 
         {/* ── Conformers Input Form ────────────────────────────────── */}
         {(view.stage === 'conformers-input') && (
-          <div className="bg-navy border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
+          <div className="bg-cream/20 backdrop-blur-xl border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
             {renderSmilesForm('conformers')}
           </div>
         )}
 
         {/* ── Result View ───────────────────────────────────────────- */}
         {(view.stage === 'result') && (
-          <div className="bg-navy border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
+          <div className="bg-cream/20 backdrop-blur-xl border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
             {renderResult()}
           </div>
         )}
 
         {/* ── Docking Form ──────────────────────────────────────────- */}
         {(view.stage === 'docking-form') && (
-          <div className="bg-navy border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
+          <div className="bg-cream/20 backdrop-blur-xl border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
             <DockingForm onClose={reset} onResult={(data) => showResult('Docking Job Created', data)} onError={showError} />
           </div>
         )}
 
         {/* ── MD Form ──────────────────────────────────────────────── */}
         {(view.stage === 'md-form') && (
-          <div className="bg-navy border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
+          <div className="bg-cream/20 backdrop-blur-xl border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
             <MDForm onClose={reset} onResult={(data) => showResult('MD Job Created', data)} onError={showError} />
           </div>
         )}
 
         {/* ── QM Form ──────────────────────────────────────────────── */}
         {(view.stage === 'qm-form') && (
-          <div className="bg-navy border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
+          <div className="bg-cream/20 backdrop-blur-xl border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
             <QMForm onClose={reset} onResult={(data) => showResult('QM Job Created', data)} onError={showError} />
           </div>
         )}
 
         {/* ── Main Menu ─────────────────────────────────────────────── */}
         {view.stage === 'main' && (
-          <div className="bg-navy border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
+          <div className="bg-cream/20 backdrop-blur-xl border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
             {/* Override cmdk defaults so Tailwind classes win */}
             <style>{`
               [cmdk-root] { background: transparent; }
