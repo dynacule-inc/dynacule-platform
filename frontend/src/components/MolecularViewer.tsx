@@ -16,14 +16,79 @@ interface MolecularViewerProps {
 }
 
 /* ── Preset display labels ─────────────────────────────────────────────────── */
-const PRESET_LABELS: Record<ViewPreset, string> = {
+const PRESET_LABELS: Record<string, string> = {
   dynacule: 'Dynacule',
-  cartoon:  'Cartoon',
-  ribbon:   'Ribbon',
-  surface:  'Surface',
-  cpk:      'CPK',
+  cartoon: 'Cartoon',
+  ribbon: 'Ribbon',
+  surface: 'Surface',
+  cpk: 'CPK',
   backbone: 'Backbone',
+  // Standard Topology & Structure
+  rainbow: 'Rainbow',
+  'chain-surface': 'Chain Surface',
+  'secondary-structure': 'Secondary Structure',
+  'bfactor-putty': 'B-Factor Putty',
+  'standard-cpk-licorice': 'Standard CPK Licorice',
+  'backbone-trace': 'Backbone Trace',
+  'vdw-spacefill': 'VDW Spacefill',
+  'nucleic-acid-ladder': 'Nucleic Acid Ladder',
+  'hydrophobicity-surface': 'Hydrophobicity Surface',
+  'ribbon-stick': 'Ribbon & Stick',
+  // Ligands & Binding Pockets
+  'ligand-emphasis': 'Ligand Emphasis',
+  'pocket-surface': 'Pocket Surface',
+  'pharmacophore-map': 'Pharmacophore Map',
+  'polar-contacts': 'Polar Contacts',
+  'halogen-bonds': 'Halogen Bonds',
+  'pi-pi-stacking': 'Pi-Pi Stacking',
+  'steric-clash-map': 'Steric Clash Map',
+  'receptor-cavity-mesh': 'Receptor Cavity Mesh',
+  'solvent-excluded-ligand': 'Solvent-Excluded Ligand',
+  'docking-score-gradient': 'Docking Score Gradient',
+  // Physicochemical & Electrostatic
+  'electrostatic-coulombic': 'Electrostatic (Coulombic)',
+  'poisson-boltzmann': 'Poisson-Boltzmann Surface',
+  mlp: 'Molecular Lipophilicity Potential',
+  'conservation-consurf': 'Evolutionary Conservation',
+  'partial-charge-map': 'Partial Charge Map',
+  'aromaticity-highlight': 'Aromaticity Highlight',
+  'pka-shift-surface': 'pKa Shift Surface',
+  'dipole-moment-vector': 'Dipole Moment Vector',
+  'solvation-free-energy': 'Solvation Free Energy',
+  'isoelectric-surface-point': 'Isoelectric Surface Point',
+  // Molecular Dynamics & Ensembles
+  'rmsf-putty': 'RMSF Putty',
+  'pca-porcupine': 'PCA Porcupine',
+  'trajectory-density-grid': 'Trajectory Density Grid',
+  'hydration-site-iso': 'Hydration Site Iso-surface',
+  dccm: 'Dynamic Cross-Correlation Map',
+  'lipid-bilayer': 'Lipid Bilayer',
+  'ion-permeation-track': 'Ion Permeation Track',
+  'trajectory-ribbon-overlay': 'Trajectory Ribbon Overlay',
+  'salt-bridge-network': 'Salt Bridge Network',
+  'unfolding-pathway': 'Unfolding Pathway',
+  // Advanced Meshes & Specialized
+  'cryoem-density': 'Cryo-EM Density Fit',
+  'xray-2fofc': 'X-ray Diffraction (2Fo-Fc)',
+  'difference-map-fofc': 'Difference Map (Fo-Fc)',
+  'ambient-occlusion': 'Ambient Occlusion Surface',
+  'depth-cued-fog': 'Depth-Cued Fog',
+  nci: 'Non-Covalent Interactions',
+  'sasa-dot-map': 'SASA Dot Map',
+  'alphafold-plddt': 'AlphaFold Confidence (pLDDT)',
+  'disulfide-bridges': 'Disulfide Bridges',
+  'ramachandran-outliers': 'Ramachandran Outliers',
 };
+
+interface PresetCategory { label: string; presets: string[]; }
+
+const PRESET_CATEGORIES: PresetCategory[] = [
+  { label: 'Standard Topology & Structure', presets: ['dynacule', 'rainbow', 'chain-surface', 'secondary-structure', 'bfactor-putty', 'standard-cpk-licorice', 'backbone-trace', 'vdw-spacefill', 'nucleic-acid-ladder', 'hydrophobicity-surface', 'ribbon-stick'] },
+  { label: 'Ligands & Binding Pockets', presets: ['ligand-emphasis', 'pocket-surface', 'pharmacophore-map', 'polar-contacts', 'halogen-bonds', 'pi-pi-stacking', 'steric-clash-map', 'receptor-cavity-mesh', 'solvent-excluded-ligand', 'docking-score-gradient'] },
+  { label: 'Physicochemical & Electrostatic', presets: ['electrostatic-coulombic', 'poisson-boltzmann', 'mlp', 'conservation-consurf', 'partial-charge-map', 'aromaticity-highlight', 'pka-shift-surface', 'dipole-moment-vector', 'solvation-free-energy', 'isoelectric-surface-point'] },
+  { label: 'Molecular Dynamics & Ensembles', presets: ['rmsf-putty', 'pca-porcupine', 'trajectory-density-grid', 'hydration-site-iso', 'dccm', 'lipid-bilayer', 'ion-permeation-track', 'trajectory-ribbon-overlay', 'salt-bridge-network', 'unfolding-pathway'] },
+  { label: 'Advanced Meshes & Specialized', presets: ['cryoem-density', 'xray-2fofc', 'difference-map-fofc', 'ambient-occlusion', 'depth-cued-fog', 'nci', 'sasa-dot-map', 'alphafold-plddt', 'disulfide-bridges', 'ramachandran-outliers'] },
+];
 
 /* ── CPK-inspired element color palette ───────────────────────────────────── */
 const ELEMENT_COLORS: Record<string, [number, number, number]> = {
@@ -258,6 +323,828 @@ async function applyPreset(
       });
       break;
     }
+
+    /* ══════════════════════════════════════════════════════════════════════ */
+    /*  Standard Topology & Structure (new presets)                         */
+    /* ══════════════════════════════════════════════════════════════════════ */
+
+    /* ── Rainbow ────────────────────────────────────────────────────────── */
+    case 'rainbow': {
+      component.addRepresentation('cartoon', {
+        color:       'residueindex',
+        Sele:        'protein',
+        smoothSheet: true,
+        subdiv:      6,
+        scale:       4.0,
+      });
+      if (nearLigand) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.3,
+          multipleBond:  true,
+          Sele:         ligandOnly,
+        });
+      }
+      break;
+    }
+
+    /* ── Chain Surface ──────────────────────────────────────────────────── */
+    case 'chain-surface': {
+      component.addRepresentation('surface', {
+        color:            'chainindex',
+        opacity:          0.8,
+        surfaceType:       'av',
+        surfaceSelection:  'protein',
+      });
+      if (nearLigand) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.25,
+          multipleBond:  true,
+          Sele:         ligandOnly,
+        });
+      }
+      break;
+    }
+
+    /* ── Secondary Structure ────────────────────────────────────────────── */
+    case 'secondary-structure': {
+      component.addRepresentation('cartoon', {
+        color:       'secstruct',
+        Sele:        'protein',
+        smoothSheet: true,
+        scale:       5.0,
+      });
+      if (nearLigand) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.3,
+          multipleBond:  true,
+          Sele:         ligandOnly,
+        });
+      }
+      break;
+    }
+
+    /* ── B-Factor Putty ──────────────────────────────────────────────────── */
+    case 'bfactor-putty': {
+      component.addRepresentation('cartoon', {
+        color:       'bfactor',
+        Sele:        'protein',
+        smoothSheet: true,
+        scale:       4.0,
+      });
+      if (nearLigand) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.3,
+          multipleBond:  true,
+          Sele:         ligandOnly,
+        });
+      }
+      break;
+    }
+
+    /* ── Standard CPK Licorice ──────────────────────────────────────────── */
+    case 'standard-cpk-licorice': {
+      component.addRepresentation('licorice', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+      });
+      break;
+    }
+
+    /* ── Backbone Trace ──────────────────────────────────────────────────── */
+    case 'backbone-trace': {
+      component.addRepresentation('backbone', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'CA',
+        radius:      0.3,
+      });
+      break;
+    }
+
+    /* ── VDW Spacefill ──────────────────────────────────────────────────── */
+    case 'vdw-spacefill': {
+      component.addRepresentation('spacefill', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+        radius:      1.0,
+      });
+      break;
+    }
+
+    /* ── Nucleic Acid Ladder ────────────────────────────────────────────── */
+    case 'nucleic-acid-ladder': {
+      component.addRepresentation('cartoon', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'nucleic',
+        scale:       5.0,
+      });
+      break;
+    }
+
+    /* ── Hydrophobicity Surface ─────────────────────────────────────────── */
+    case 'hydrophobicity-surface': {
+      component.addRepresentation('surface', {
+        color:            '#d4a017',
+        opacity:          0.85,
+        surfaceType:       'av',
+        surfaceSelection:  'protein',
+      });
+      break;
+    }
+
+    /* ── Ribbon & Stick ─────────────────────────────────────────────────── */
+    case 'ribbon-stick': {
+      component.addRepresentation('ribbon', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+        smoothSheet: true,
+        scale:       7.0,
+      });
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.3,
+        multipleBond:  true,
+        Sele:         ligandOnly,
+      });
+      if (nearProt) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.18,
+          multipleBond:  true,
+          Sele:         nearProt,
+        });
+      }
+      break;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════ */
+    /*  Ligands & Binding Pockets                                            */
+    /* ══════════════════════════════════════════════════════════════════════ */
+
+    /* ── Ligand Emphasis ────────────────────────────────────────────────── */
+    case 'ligand-emphasis': {
+      component.addRepresentation('surface', {
+        color:            '#ffffff',
+        opacity:          0.2,
+        surfaceType:       'av',
+        surfaceSelection:  'protein',
+      });
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.4,
+        multipleBond:  true,
+        Sele:         ligandOnly,
+      });
+      break;
+    }
+
+    /* ── Pocket Surface ──────────────────────────────────────────────────── */
+    case 'pocket-surface': {
+      if (nearProt) {
+        component.addRepresentation('surface', {
+          color:       'element',
+          colorScheme: elemCol,
+          surfaceType: 'av',
+          Sele:        nearProt,
+        });
+      }
+      break;
+    }
+
+    /* ── Pharmacophore Map ──────────────────────────────────────────────── */
+    case 'pharmacophore-map': {
+      component.addRepresentation('licorice', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        ligandOnly,
+      });
+      component.addRepresentation('spacefill', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        ligandOnly,
+        radius:      0.1,
+      });
+      break;
+    }
+
+    /* ── Polar Contacts ─────────────────────────────────────────────────── */
+    case 'polar-contacts': {
+      component.addRepresentation('line', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+      });
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.25,
+        multipleBond:  true,
+        Sele:         ligandOnly,
+      });
+      if (nearProt) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.18,
+          multipleBond:  true,
+          Sele:         nearProt,
+        });
+      }
+      break;
+    }
+
+    /* ── Halogen Bonds ──────────────────────────────────────────────────── */
+    case 'halogen-bonds': {
+      component.addRepresentation('line', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+      });
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.3,
+        multipleBond:  true,
+        Sele:         'F or CL or BR or I',
+      });
+      if (nearLigand) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.18,
+          multipleBond:  true,
+          Sele:         ligandOnly,
+        });
+      }
+      break;
+    }
+
+    /* ── Pi-Pi Stacking ──────────────────────────────────────────────────── */
+    case 'pi-pi-stacking': {
+      component.addRepresentation('cartoon', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+        scale:       2.0,
+      });
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.3,
+        multipleBond:  true,
+        Sele:         'ARO',
+      });
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.25,
+        multipleBond:  true,
+        Sele:         ligandOnly,
+      });
+      break;
+    }
+
+    /* ── Steric Clash Map ────────────────────────────────────────────────── */
+    case 'steric-clash-map': {
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.5,
+        multipleBond:  true,
+        Sele:         ligandOnly,
+      });
+      if (nearProt) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.5,
+          multipleBond:  true,
+          Sele:         nearProt,
+        });
+      }
+      component.addRepresentation('contact', {
+        color:       '#ff4444',
+        Sele:        ligandOnly,
+        radius:      0.5,
+      });
+      break;
+    }
+
+    /* ── Receptor Cavity Mesh ────────────────────────────────────────────── */
+    case 'receptor-cavity-mesh': {
+      component.addRepresentation('surface', {
+        color:            '#cccccc',
+        opacity:          0.15,
+        surfaceType:       'ms',
+        surfaceSelection:  'protein',
+      });
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.25,
+        multipleBond:  true,
+        Sele:         ligandOnly,
+      });
+      break;
+    }
+
+    /* ── Solvent-Excluded Ligand ────────────────────────────────────────── */
+    case 'solvent-excluded-ligand': {
+      component.addRepresentation('dot', {
+        color:  '#ffffff',
+        Sele:   ligandOnly,
+        dotSize: 0.5,
+      });
+      break;
+    }
+
+    /* ── Docking Score Gradient ──────────────────────────────────────────── */
+    case 'docking-score-gradient': {
+      component.addRepresentation('ball+stick', {
+        color:        'bfactor',
+        colorScheme:  elemCol,
+        radius:        0.3,
+        multipleBond:  true,
+        Sele:         ligandOnly,
+      });
+      break;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════ */
+    /*  Physicochemical & Electrostatic                                      */
+    /* ══════════════════════════════════════════════════════════════════════ */
+
+    /* ── Electrostatic (Coulombic) ──────────────────────────────────────── */
+    case 'electrostatic-coulombic': {
+      component.addRepresentation('surface', {
+        color:            'electrostatic',
+        opacity:          0.8,
+        surfaceType:       'av',
+        surfaceSelection:  'protein',
+      });
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.3,
+        multipleBond:  true,
+        Sele:         ligandOnly,
+      });
+      if (nearProt) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.18,
+          multipleBond:  true,
+          Sele:         nearProt,
+        });
+      }
+      break;
+    }
+
+    /* ── Poisson-Boltzmann Surface ───────────────────────────────────────── */
+    case 'poisson-boltzmann': {
+      component.addRepresentation('surface', {
+        color:            'electrostatic',
+        opacity:          0.75,
+        surfaceType:       'ms',
+        surfaceSelection:  'protein',
+      });
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.3,
+        multipleBond:  true,
+        Sele:         ligandOnly,
+      });
+      if (nearProt) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.18,
+          multipleBond:  true,
+          Sele:         nearProt,
+        });
+      }
+      break;
+    }
+
+    /* ── Molecular Lipophilicity Potential ──────────────────────────────── */
+    case 'mlp': {
+      component.addRepresentation('surface', {
+        color:            '#c9a84c',
+        opacity:          0.7,
+        surfaceType:       'av',
+        surfaceSelection:  'protein',
+      });
+      break;
+    }
+
+    /* ── Evolutionary Conservation ───────────────────────────────────────── */
+    case 'conservation-consurf': {
+      component.addRepresentation('cartoon', {
+        color:       'occupancy',
+        Sele:        'protein',
+        scale:       4.0,
+      });
+      if (nearLigand) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.3,
+          multipleBond:  true,
+          Sele:         ligandOnly,
+        });
+      }
+      break;
+    }
+
+    /* ── Partial Charge Map ──────────────────────────────────────────────── */
+    case 'partial-charge-map': {
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.2,
+        multipleBond:  true,
+        Sele:         'protein',
+      });
+      if (nearLigand) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.25,
+          multipleBond:  true,
+          Sele:         ligandOnly,
+        });
+      }
+      break;
+    }
+
+    /* ── Aromaticity Highlight ──────────────────────────────────────────── */
+    case 'aromaticity-highlight': {
+      component.addRepresentation('line', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+      });
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.3,
+        multipleBond:  true,
+        Sele:         'ARO',
+      });
+      break;
+    }
+
+    /* ── pKa Shift Surface ───────────────────────────────────────────────── */
+    case 'pka-shift-surface': {
+      component.addRepresentation('surface', {
+        color:            '#c9a84c',
+        opacity:          0.7,
+        surfaceType:       'av',
+        surfaceSelection:  'protein',
+      });
+      break;
+    }
+
+    /* ── Dipole Moment Vector ────────────────────────────────────────────── */
+    case 'dipole-moment-vector': {
+      component.addRepresentation('backbone', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'CA',
+        radius:      0.3,
+      });
+      break;
+    }
+
+    /* ── Solvation Free Energy ───────────────────────────────────────────── */
+    case 'solvation-free-energy': {
+      component.addRepresentation('surface', {
+        color:            '#5b7db1',
+        opacity:          0.7,
+        surfaceType:       'sas',
+        surfaceSelection:  'protein',
+      });
+      break;
+    }
+
+    /* ── Isoelectric Surface Point ───────────────────────────────────────── */
+    case 'isoelectric-surface-point': {
+      component.addRepresentation('surface', {
+        color:            '#8b5cf6',
+        opacity:          0.7,
+        surfaceType:       'av',
+        surfaceSelection:  'protein',
+      });
+      break;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════ */
+    /*  Molecular Dynamics & Ensembles                                       */
+    /* ══════════════════════════════════════════════════════════════════════ */
+
+    /* ── RMSF Putty ──────────────────────────────────────────────────────── */
+    case 'rmsf-putty': {
+      component.addRepresentation('tube', {
+        color:  'bfactor',
+        Sele:   'CA',
+        radius: 0.5,
+      });
+      break;
+    }
+
+    /* ── PCA Porcupine ───────────────────────────────────────────────────── */
+    case 'pca-porcupine': {
+      component.addRepresentation('backbone', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'CA',
+        radius:      0.3,
+      });
+      break;
+    }
+
+    /* ── Trajectory Density Grid ─────────────────────────────────────────── */
+    case 'trajectory-density-grid': {
+      component.addRepresentation('surface', {
+        color:            '#66c2a5',
+        opacity:          0.3,
+        surfaceType:       'av',
+        surfaceSelection:  'protein',
+      });
+      break;
+    }
+
+    /* ── Hydration Site Iso-surface ──────────────────────────────────────── */
+    case 'hydration-site-iso': {
+      component.addRepresentation('surface', {
+        color:            '#80b1d3',
+        opacity:          0.3,
+        surfaceType:       'av',
+        surfaceSelection:  'HOH',
+      });
+      break;
+    }
+
+    /* ── Dynamic Cross-Correlation Map ──────────────────────────────────── */
+    case 'dccm': {
+      component.addRepresentation('line', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+      });
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.15,
+        multipleBond:  true,
+        Sele:         'CA',
+      });
+      break;
+    }
+
+    /* ── Lipid Bilayer ──────────────────────────────────────────────────── */
+    case 'lipid-bilayer': {
+      component.addRepresentation('cartoon', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+      });
+      component.addRepresentation('line', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'not (protein or HOH)',
+      });
+      break;
+    }
+
+    /* ── Ion Permeation Track ────────────────────────────────────────────── */
+    case 'ion-permeation-track': {
+      component.addRepresentation('cartoon', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+        scale:       4.0,
+      });
+      component.addRepresentation('spacefill', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'NA or K or CL or CA or MG',
+        radius:      0.5,
+      });
+      break;
+    }
+
+    /* ── Trajectory Ribbon Overlay ───────────────────────────────────────── */
+    case 'trajectory-ribbon-overlay': {
+      component.addRepresentation('cartoon', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+        scale:       3.0,
+      });
+      break;
+    }
+
+    /* ── Salt Bridge Network ─────────────────────────────────────────────── */
+    case 'salt-bridge-network': {
+      component.addRepresentation('line', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+      });
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.3,
+        multipleBond:  true,
+        Sele:         'ASP or GLU or LYS or ARG or HIS',
+      });
+      break;
+    }
+
+    /* ── Unfolding Pathway ───────────────────────────────────────────────── */
+    case 'unfolding-pathway': {
+      component.addRepresentation('cartoon', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+        scale:       2.0,
+        opacity:     0.5,
+      });
+      break;
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════ */
+    /*  Advanced Meshes & Specialized                                         */
+    /* ══════════════════════════════════════════════════════════════════════ */
+
+    /* ── Cryo-EM Density Fit ────────────────────────────────────────────── */
+    case 'cryoem-density': {
+      component.addRepresentation('cartoon', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+        scale:       3.0,
+      });
+      component.addRepresentation('surface', {
+        color:            '#e0e0e0',
+        opacity:          0.15,
+        surfaceType:       'av',
+        surfaceSelection:  'protein',
+      });
+      break;
+    }
+
+    /* ── X-ray Diffraction (2Fo-Fc) ─────────────────────────────────────── */
+    case 'xray-2fofc': {
+      component.addRepresentation('cartoon', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+      });
+      component.addRepresentation('surface', {
+        color:            '#4a90d9',
+        opacity:          0.12,
+        surfaceType:       'av',
+        surfaceSelection:  'protein',
+      });
+      break;
+    }
+
+    /* ── Difference Map (Fo-Fc) ──────────────────────────────────────────── */
+    case 'difference-map-fofc': {
+      component.addRepresentation('line', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+      });
+      component.addRepresentation('surface', {
+        color:            '#ff6b6b',
+        opacity:          0.15,
+        surfaceType:       'av',
+        surfaceSelection:  'protein',
+      });
+      break;
+    }
+
+    /* ── Ambient Occlusion Surface ───────────────────────────────────────── */
+    case 'ambient-occlusion': {
+      component.addRepresentation('surface', {
+        color:            '#c4b998',
+        opacity:          0.85,
+        surfaceType:       'av',
+        surfaceSelection:  'protein',
+      });
+      break;
+    }
+
+    /* ── Depth-Cued Fog ──────────────────────────────────────────────────── */
+    case 'depth-cued-fog': {
+      component.addRepresentation('cartoon', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+        scale:       3.0,
+      });
+      break;
+    }
+
+    /* ── Non-Covalent Interactions ───────────────────────────────────────── */
+    case 'nci': {
+      component.addRepresentation('surface', {
+        color:            '#e5c494',
+        opacity:          0.7,
+        surfaceType:       'av',
+        surfaceSelection:  'protein',
+      });
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.3,
+        multipleBond:  true,
+        Sele:         ligandOnly,
+      });
+      break;
+    }
+
+    /* ── SASA Dot Map ──────────────────────────────────────────────────── */
+    case 'sasa-dot-map': {
+      component.addRepresentation('dot', {
+        color:   '#8da0cb',
+        Sele:    'protein',
+        dotSize: 0.4,
+      });
+      break;
+    }
+
+    /* ── AlphaFold Confidence (pLDDT) ────────────────────────────────────── */
+    case 'alphafold-plddt': {
+      component.addRepresentation('cartoon', {
+        color:       'bfactor',
+        Sele:        'protein',
+        scale:       4.0,
+      });
+      if (nearLigand) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.3,
+          multipleBond:  true,
+          Sele:         ligandOnly,
+        });
+      }
+      break;
+    }
+
+    /* ── Disulfide Bridges ──────────────────────────────────────────────── */
+    case 'disulfide-bridges': {
+      component.addRepresentation('backbone', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'CA',
+        radius:      0.3,
+      });
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.4,
+        multipleBond:  true,
+        Sele:         'SG',
+      });
+      break;
+    }
+
+    /* ── Ramachandran Outliers ───────────────────────────────────────────── */
+    case 'ramachandran-outliers': {
+      component.addRepresentation('line', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+      });
+      component.addRepresentation('spacefill', {
+        color:  '#ff0000',
+        Sele:   'CA',
+        radius: 0.6,
+      });
+      break;
+    }
   }
 
   setTimeout(() => {
@@ -274,6 +1161,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
   const [nglReady, setNglReady] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loadStatus, setLoadStatus] = useState<string>('');
+  const [presetDropdownOpen, setPresetDropdownOpen] = useState(false);
 
   const {
     selectedAtom, setSelectedAtom,
@@ -570,8 +1458,6 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
     );
   }
 
-  const presets = Object.entries(PRESET_LABELS) as [ViewPreset, string][];
-
   return (
     <div className={`relative ${className ?? ''}`}>
       <div ref={containerRef} className="w-full h-full" />
@@ -597,20 +1483,63 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
 
       {/* ── Preset toolbar ──────────────────────────────────────────────── */}
       {nglReady && selectedMolecule && (
-        <div className="absolute top-2 right-2 flex gap-1 flex-wrap max-w-[240px] justify-end">
-          {presets.map(([preset, label]) => (
+        <div className="absolute top-2 right-2 flex flex-col gap-1 max-w-[240px]">
+          {/* Quick-access buttons for top 6 presets */}
+          <div className="flex gap-1 flex-wrap justify-end">
+            {['dynacule', 'rainbow', 'secondary-structure', 'surface', 'cpk', 'alphafold-plddt'].map((p) => (
+              <button
+                key={p}
+                onClick={() => {
+                  (setViewPreset as (p: string) => void)(p);
+                  setPresetDropdownOpen(false);
+                }}
+                className={`px-2 py-1 rounded text-xs font-mono transition-colors ${
+                  viewPreset === p
+                    ? 'bg-gold text-navy font-semibold'
+                    : 'bg-navy/80 text-cream/80 hover:bg-navy hover:text-cream'
+                }`}
+              >
+                {PRESET_LABELS[p] || p}
+              </button>
+            ))}
+          </div>
+          {/* Full preset dropdown */}
+          <div className="relative">
             <button
-              key={preset}
-              onClick={() => setViewPreset(preset)}
-              className={`px-2 py-1 rounded text-xs font-mono transition-colors ${
-                viewPreset === preset
-                  ? 'bg-gold text-navy font-semibold'
-                  : 'bg-navy/80 text-cream hover:bg-navy'
-              }`}
+              onClick={() => setPresetDropdownOpen(!presetDropdownOpen)}
+              className="w-full px-2 py-1 rounded text-xs font-mono bg-navy/80 text-cream/70 hover:bg-navy hover:text-cream transition-colors text-left flex items-center justify-between"
             >
-              {label}
+              <span className="truncate">{PRESET_LABELS[viewPreset] || viewPreset}</span>
+              <span className="text-[8px] ml-1">{presetDropdownOpen ? '▲' : '▼'}</span>
             </button>
-          ))}
+            {presetDropdownOpen && (
+              <div className="absolute right-0 mt-1 w-64 max-h-[70vh] overflow-y-auto bg-navy border border-gold/30 rounded-lg shadow-2xl z-50">
+                {PRESET_CATEGORIES.map((cat) => (
+                  <div key={cat.label}>
+                    <div className="px-3 py-1.5 text-[9px] uppercase tracking-widest text-gold font-mono border-b border-gold/10">
+                      {cat.label}
+                    </div>
+                    {cat.presets.map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => {
+                          (setViewPreset as (p: string) => void)(p);
+                          setPresetDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 text-xs font-mono transition-colors ${
+                          viewPreset === p
+                            ? 'bg-gold/20 text-cream font-semibold'
+                            : 'text-cream/70 hover:bg-gold/10 hover:text-cream'
+                        }`}
+                      >
+                        {PRESET_LABELS[p] || p}
+                      </button>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

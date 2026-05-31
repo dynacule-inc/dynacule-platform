@@ -19,7 +19,24 @@ interface AtomSelection {
   z: number;
 }
 
-export type ViewPreset = 'dynacule' | 'cartoon' | 'ribbon' | 'surface' | 'cpk' | 'backbone';
+export type ViewPreset = 'dynacule' | 'cartoon' | 'ribbon' | 'surface' | 'cpk' | 'backbone' |
+  'rainbow' | 'chain-surface' | 'secondary-structure' | 'bfactor-putty' |
+  'standard-cpk-licorice' | 'backbone-trace' | 'vdw-spacefill' | 'nucleic-acid-ladder' |
+  'hydrophobicity-surface' | 'ribbon-stick' |
+  'ligand-emphasis' | 'pocket-surface' | 'pharmacophore-map' | 'polar-contacts' |
+  'halogen-bonds' | 'pi-pi-stacking' | 'steric-clash-map' | 'receptor-cavity-mesh' |
+  'solvent-excluded-ligand' | 'docking-score-gradient' |
+  'electrostatic-coulombic' | 'poisson-boltzmann' | 'mlp' |
+  'conservation-consurf' | 'partial-charge-map' | 'aromaticity-highlight' |
+  'pka-shift-surface' | 'dipole-moment-vector' | 'solvation-free-energy' |
+  'isoelectric-surface-point' |
+  'rmsf-putty' | 'pca-porcupine' | 'trajectory-density-grid' | 'hydration-site-iso' |
+  'dccm' | 'lipid-bilayer' | 'ion-permeation-track' |
+  'trajectory-ribbon-overlay' | 'salt-bridge-network' | 'unfolding-pathway' |
+  'cryoem-density' | 'xray-2fofc' | 'difference-map-fofc' |
+  'ambient-occlusion' | 'depth-cued-fog' | 'nci' |
+  'sasa-dot-map' | 'alphafold-plddt' | 'disulfide-bridges' |
+  'ramachandran-outliers';
 
 export interface VizCommand {
   type: 'clear' | 'docking' | 'md' | 'qm';
