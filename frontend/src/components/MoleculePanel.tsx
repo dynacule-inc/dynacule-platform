@@ -153,7 +153,7 @@ export default function MoleculePanel() {
     return (
       <div
         ref={ctxRef}
-        className="fixed z-[100] bg-navy border border-gold/30 rounded-lg shadow-2xl py-1 min-w-[170px]"
+        className="fixed z-[100] bg-navy/80 backdrop-blur-lg border border-gold/30 rounded-lg shadow-2xl py-1 min-w-[170px]"
         style={{ left: ctxMenu.x, top: ctxMenu.y }}
         onClick={() => setCtxMenu(null)}
       >

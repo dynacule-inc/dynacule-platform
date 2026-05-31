@@ -1093,7 +1093,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
               <span className="text-[8px] ml-1">{presetDropdownOpen ? '▲' : '▼'}</span>
             </button>
             {presetDropdownOpen && (
-              <div className="absolute right-0 mt-1 w-64 max-h-[70vh] overflow-y-auto bg-navy border border-gold/30 rounded-lg shadow-2xl z-50">
+              <div className="absolute right-0 mt-1 w-64 max-h-[70vh] overflow-y-auto bg-navy/80 backdrop-blur-lg border border-gold/30 rounded-lg shadow-2xl z-50">
                 {PRESET_CATEGORIES.map((cat) => (
                   <div key={cat.label}>
                     <div className="px-3 py-1.5 text-[9px] uppercase tracking-widest text-gold font-mono border-b border-gold/10">
