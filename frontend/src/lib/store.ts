@@ -36,7 +36,8 @@ export type ViewPreset = 'dynacule' | 'cartoon' | 'ribbon' | 'surface' | 'cpk' |
   'cryoem-density' | 'xray-2fofc' | 'difference-map-fofc' |
   'ambient-occlusion' | 'depth-cued-fog' | 'nci' |
   'sasa-dot-map' | 'alphafold-plddt' | 'disulfide-bridges' |
-  'ramachandran-outliers';
+  'ramachandran-outliers' |
+  'dark-matter' | 'glass' | 'blueprint' | 'ghost' | 'oil-paint' | 'publication';
 
 export interface VizCommand {
   type: 'clear' | 'docking' | 'md' | 'qm';
@@ -109,6 +110,16 @@ interface State {
   // Visibility flags
   visibilityFlags: VisibilityFlags;
   setVisibilityFlags: (flags: VisibilityFlags) => void;
+
+  // NMR ensemble state
+  nmrEnsemble: boolean;
+  nmrPlaying: boolean;
+  nmrFrame: number;
+  nmrTotalFrames: number;
+  setNmrEnsemble: (val: boolean) => void;
+  setNmrPlaying: (val: boolean) => void;
+  setNmrFrame: (val: number) => void;
+  setNmrTotalFrames: (val: number) => void;
 }
 
 export const useStore = create<State>((set) => ({
@@ -167,4 +178,14 @@ export const useStore = create<State>((set) => ({
   // Visibility flags
   visibilityFlags: { showRibbon: true, showAtoms: true },
   setVisibilityFlags: (visibilityFlags) => set({ visibilityFlags }),
+
+  // NMR ensemble
+  nmrEnsemble: false,
+  nmrPlaying: false,
+  nmrFrame: 0,
+  nmrTotalFrames: 0,
+  setNmrEnsemble: (nmrEnsemble) => set({ nmrEnsemble }),
+  setNmrPlaying: (nmrPlaying) => set({ nmrPlaying }),
+  setNmrFrame: (nmrFrame) => set({ nmrFrame }),
+  setNmrTotalFrames: (nmrTotalFrames) => set({ nmrTotalFrames }),
 }));

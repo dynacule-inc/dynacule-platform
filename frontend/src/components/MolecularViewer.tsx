@@ -98,6 +98,12 @@ const PRESET_LABELS: Record<string, string> = {
   'alphafold-plddt': 'AlphaFold Confidence (pLDDT)',
   'disulfide-bridges': 'Disulfide Bridges',
   'ramachandran-outliers': 'Ramachandran Outliers',
+  'dark-matter': 'Dark Matter',
+  glass: 'Glass',
+  blueprint: 'Blueprint',
+  ghost: 'Ghost',
+  'oil-paint': 'Oil Paint',
+  publication: 'Publication',
 };
 
 interface PresetCategory { label: string; presets: string[]; }
@@ -108,6 +114,7 @@ const PRESET_CATEGORIES: PresetCategory[] = [
   { label: 'Physicochemical & Electrostatic', presets: ['electrostatic-coulombic', 'poisson-boltzmann', 'mlp', 'conservation-consurf', 'partial-charge-map', 'aromaticity-highlight', 'pka-shift-surface', 'dipole-moment-vector', 'solvation-free-energy', 'isoelectric-surface-point'] },
   { label: 'Molecular Dynamics & Ensembles', presets: ['rmsf-putty', 'pca-porcupine', 'trajectory-density-grid', 'hydration-site-iso', 'dccm', 'lipid-bilayer', 'ion-permeation-track', 'trajectory-ribbon-overlay', 'salt-bridge-network', 'unfolding-pathway'] },
   { label: 'Advanced Meshes & Specialized', presets: ['cryoem-density', 'xray-2fofc', 'difference-map-fofc', 'ambient-occlusion', 'depth-cued-fog', 'nci', 'sasa-dot-map', 'alphafold-plddt', 'disulfide-bridges', 'ramachandran-outliers'] },
+  { label: 'Illustration & Publication', presets: ['dark-matter', 'glass', 'blueprint', 'ghost', 'oil-paint', 'publication'] },
 ];
 
 /* ── CPK element color palette ───────────────────────────────────────────── */
@@ -175,12 +182,13 @@ async function applyPreset(
   /* ══════════════════════════════════════════════════════════════════════
      Standard Topology & Structure                                       */
 
-  /* Dynacule — signature view: thick helix/sheet cartoon, thin coil tube,
-     ligand ball+stick, near-pocket protein detail */
+  /* Dynacule — signature view: thick helix/sheet cartoon, ultra-thin coil tube,
+     ligand ball+stick, near-pocket protein detail.
+     Helix scale 14 and sheet scale 12 dominate the thin coil tube (radius 0.08). */
   case 'dynacule': {
-    addRep('cartoon', { color: 'element', colorScheme: E, sele: SEL_HELIX, smoothSheet: true, subdiv: 6, scale: 12.0 }, 'proteinRibbon');
-    addRep('cartoon', { color: 'element', colorScheme: E, sele: SEL_SHEET, smoothSheet: true, subdiv: 6, scale: 10.0 }, 'proteinRibbon');
-    addRep('tube',   { color: 'element', colorScheme: E, sele: SEL_COIL, radius: 0.12, subdiv: 4 }, 'proteinRibbon');
+    addRep('cartoon', { color: 'element', colorScheme: E, sele: SEL_HELIX, smoothSheet: true, subdiv: 6, scale: 14.0 }, 'proteinRibbon');
+    addRep('cartoon', { color: 'element', colorScheme: E, sele: SEL_SHEET, smoothSheet: true, subdiv: 6, scale: 12.0 }, 'proteinRibbon');
+    addRep('tube',   { color: 'element', colorScheme: E, sele: SEL_COIL, radius: 0.08, subdiv: 4 }, 'proteinRibbon');
     addRep('ball+stick', { color: 'element', colorScheme: E, sele: LM, radius: 0.3, multipleBond: true }, 'ligandAtoms');
     addRep('ball+stick', { color: 'element', colorScheme: E, sele: NP, radius: 0.18, multipleBond: true }, 'proteinAtoms');
     break;
@@ -595,6 +603,68 @@ async function applyPreset(
     break;
   }
 
+  /* ══════════════════════════════════════════════════════════════════════
+     Illustration & Publication                                               */
+
+  /* Dark Matter — deep dark surface with neon element highlights */
+  case 'dark-matter': {
+    addRep('surface', { color: '#0a0a0a', opacity: 0.92, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
+    addRep('cartoon', { color: 'element', colorScheme: E, sele: SEL_HELIX, smoothSheet: true, subdiv: 6, scale: 14.0, opacity: 0.35 }, 'proteinRibbon');
+    addRep('cartoon', { color: 'element', colorScheme: E, sele: SEL_SHEET, smoothSheet: true, subdiv: 6, scale: 12.0, opacity: 0.35 }, 'proteinRibbon');
+    addRep('tube',   { color: 'element', colorScheme: E, sele: SEL_COIL, radius: 0.08, subdiv: 4, opacity: 0.35 }, 'proteinRibbon');
+    addRep('ball+stick', { color: 'element', colorScheme: E, sele: LM, radius: 0.35, multipleBond: true }, 'ligandAtoms');
+    addRep('ball+stick', { color: 'element', colorScheme: E, sele: NP, radius: 0.2, multipleBond: true }, 'proteinAtoms');
+    break;
+  }
+
+  /* Glass — translucent white surface, thin backbone trace, vivid ligand */
+  case 'glass': {
+    addRep('surface', { color: '#e8e4e0', opacity: 0.25, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
+    addRep('cartoon', { color: '#888888', sele: P, smoothSheet: true, scale: 4.0, opacity: 0.6 }, 'proteinRibbon');
+    addRep('ball+stick', { color: 'element', colorScheme: E, sele: LM, radius: 0.35, multipleBond: true }, 'ligandAtoms');
+    addRep('ball+stick', { color: 'element', colorScheme: E, sele: NP, radius: 0.18, multipleBond: true }, 'proteinAtoms');
+    break;
+  }
+
+  /* Blueprint — navy wireframe on cream, technical drawing aesthetic */
+  case 'blueprint': {
+    addRep('cartoon', { color: '#0f1b2d', sele: P, smoothSheet: true, scale: 14.0 }, 'proteinRibbon');
+    addRep('cartoon', { color: '#0f1b2d', sele: P, smoothSheet: true, scale: 5.0, opacity: 0.15 }, 'proteinRibbon');
+    addRep('licorice', { color: '#1a3a5c', sele: LM, radius: 0.15 }, 'ligandAtoms');
+    addRep('licorice', { color: '#1a3a5c', sele: NP, radius: 0.1 }, 'proteinAtoms');
+    break;
+  }
+
+  /* Ghost — ultra-faint transparent, atmospheric depth */
+  case 'ghost': {
+    addRep('surface', { color: '#c9a84c', opacity: 0.08, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
+    addRep('cartoon', { color: '#999999', sele: P, smoothSheet: true, scale: 4.0, opacity: 0.2 }, 'proteinRibbon');
+    addRep('ball+stick', { color: '#ffffff', sele: LM, radius: 0.3, multipleBond: true, opacity: 0.7 }, 'ligandAtoms');
+    addRep('ball+stick', { color: '#cccccc', sele: NP, radius: 0.18, multipleBond: true, opacity: 0.4 }, 'proteinAtoms');
+    break;
+  }
+
+  /* Oil Paint — rich warmth, gold/cream/sepia palette, bold forms */
+  case 'oil-paint': {
+    addRep('surface', { color: '#a0522d', opacity: 0.65, surfaceType: 'av', surfaceSelection: 'protein', roughness: 1.0 }, 'proteinRibbon');
+    addRep('cartoon', { color: '#c9a84c', sele: SEL_HELIX, smoothSheet: true, subdiv: 6, scale: 14.0 }, 'proteinRibbon');
+    addRep('cartoon', { color: '#d4a574', sele: SEL_SHEET, smoothSheet: true, subdiv: 6, scale: 12.0 }, 'proteinRibbon');
+    addRep('tube',   { color: '#8b7355', sele: SEL_COIL, radius: 0.08, subdiv: 4 }, 'proteinRibbon');
+    addRep('ball+stick', { color: '#c9a84c', sele: LM, radius: 0.35, multipleBond: true }, 'ligandAtoms');
+    addRep('ball+stick', { color: '#d4a574', sele: NP, radius: 0.2, multipleBond: true }, 'proteinAtoms');
+    break;
+  }
+
+  /* Publication — clean white background, muted palette, print-ready */
+  case 'publication': {
+    addRep('cartoon', { color: '#4a4a4a', sele: SEL_HELIX, smoothSheet: true, subdiv: 6, scale: 14.0 }, 'proteinRibbon');
+    addRep('cartoon', { color: '#6a6a6a', sele: SEL_SHEET, smoothSheet: true, subdiv: 6, scale: 12.0 }, 'proteinRibbon');
+    addRep('tube',   { color: '#9a9a9a', sele: SEL_COIL, radius: 0.08, subdiv: 4 }, 'proteinRibbon');
+    addRep('ball+stick', { color: 'element', colorScheme: E, sele: LM, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+    addRep('ball+stick', { color: '#888888', sele: NP, radius: 0.15, multipleBond: true }, 'proteinAtoms');
+    break;
+  }
+
   } // end switch
 
   setTimeout(() => {
@@ -624,6 +694,10 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
     viewPreset, setViewPreset,
     colorScheme,
     visibilityFlags,
+    nmrEnsemble, setNmrEnsemble,
+    nmrPlaying, setNmrPlaying,
+    nmrFrame, setNmrFrame,
+    nmrTotalFrames, setNmrTotalFrames,
   } = useStore();
 
   const reprStoreRef = useRef<Record<string, any[]>>({
@@ -681,6 +755,14 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
     const stage = stageRef.current;
     if (!stage) return;
 
+    // Reset NMR state on new molecule load
+    if (nmrAnimRef.current) { cancelAnimationFrame(nmrAnimRef.current); nmrAnimRef.current = null; }
+    nmrCompRef.current = null;
+    setNmrEnsemble(false);
+    setNmrPlaying(false);
+    setNmrFrame(0);
+    setNmrTotalFrames(0);
+
     try {
       setLoadStatus('Loading…');
 
@@ -692,18 +774,28 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
       let comp;
 
       if (mol.source === 'rcsb') {
-        // Load directly from RCSB PDB
-        comp = await stage.loadFile(`rcsb://${mol.name.toLowerCase()}`, { defaultRepresentation: false });
+        // Load directly from RCSB PDB — use asTrajectory for NMR ensemble detection
+        comp = await stage.loadFile(`rcsb://${mol.name.toLowerCase()}`, { defaultRepresentation: false, asTrajectory: true });
       } else {
         // Load from backend API
         const { pdb } = await moleculeApi.getPdb(mol.id);
         const blob = new Blob([pdb], { type: 'text/plain' });
-        comp = await stage.loadFile(blob, { ext: 'pdb', defaultRepresentation: false });
+        comp = await stage.loadFile(blob, { ext: 'pdb', defaultRepresentation: false, asTrajectory: true });
       }
 
       if (comp) {
         comp.setName('loaded-molecule');
         await applyPreset(comp, viewPreset, stage, reprStoreRef.current);
+
+        // Detect NMR ensemble: multi-model structure that isn't MD data
+        const numFrames = comp?.trajectory?.numFrames ?? 0;
+        if (numFrames > 1) {
+          setNmrEnsemble(true);
+          setNmrTotalFrames(numFrames);
+          setNmrFrame(0);
+          nmrCompRef.current = comp;
+          setNmrPlaying(true); // auto-play NMR ensemble loop
+        }
       }
 
       setLoadStatus('');
@@ -785,6 +877,8 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
   /* ── Viz command handling ──────────────────────────────────────────────── */
   const overlayRef = useRef<any>(null);
   const trajCompRef = useRef<any>(null);
+  const nmrCompRef = useRef<any>(null);
+  const nmrAnimRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!nglReady || !stageRef.current) return;
@@ -841,6 +935,37 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
     if (!trajCompRef.current) return;
     try { trajCompRef.current.setFrame(trajFrame); } catch { /* noop */ }
   }, [trajFrame]);
+
+  /* ── NMR ensemble looping animation ────────────────────────────────────── */
+  useEffect(() => {
+    if (!nmrEnsemble || !nmrPlaying || !nmrCompRef.current) return;
+
+    const FRAME_INTERVAL = 200; // ms per frame — smooth but not too fast
+    let lastTime = 0;
+    let currentFrame = nmrFrame;
+
+    const animate = (time: number) => {
+      if (!lastTime) lastTime = time;
+      if (time - lastTime >= FRAME_INTERVAL) {
+        lastTime = time;
+        currentFrame = (currentFrame + 1) % nmrTotalFrames;
+        setNmrFrame(currentFrame);
+        try { nmrCompRef.current?.setFrame(currentFrame); } catch { /* noop */ }
+      }
+      nmrAnimRef.current = requestAnimationFrame(animate);
+    };
+
+    nmrAnimRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (nmrAnimRef.current) { cancelAnimationFrame(nmrAnimRef.current); nmrAnimRef.current = null; }
+    };
+  }, [nmrEnsemble, nmrPlaying, nmrTotalFrames]);
+
+  /* ── NMR manual frame control ───────────────────────────────────────────── */
+  useEffect(() => {
+    if (!nmrEnsemble || nmrPlaying || !nmrCompRef.current) return;
+    try { nmrCompRef.current.setFrame(nmrFrame); } catch { /* noop */ }
+  }, [nmrFrame, nmrEnsemble, nmrPlaying]);
 
   /* ── Picking mode cursor ──────────────────────────────────────────────── */
   useEffect(() => {
@@ -921,7 +1046,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
       {nglReady && selectedMolecule && (
         <div className="absolute top-2 right-2 flex flex-col gap-1 max-w-[240px]">
           <div className="flex gap-1 flex-wrap justify-end">
-            {['dynacule', 'cartoon', 'surface', 'cpk', 'rainbow', 'alphafold-plddt'].map((p) => (
+            {['dynacule', 'cartoon', 'surface', 'cpk', 'rainbow', 'dark-matter', 'glass', 'publication'].map((p) => (
               <button
                 key={p}
                 onClick={() => { (setViewPreset as (p: string) => void)(p); setPresetDropdownOpen(false); }}
@@ -964,6 +1089,30 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ── NMR ensemble controls ────────────────────────────────────────── */}
+      {nglReady && selectedMolecule && nmrEnsemble && (
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-navy/90 rounded-lg px-3 py-1.5 border border-gold/20">
+          <span className="text-[9px] font-mono text-gold uppercase tracking-wider">NMR</span>
+          <button
+            onClick={() => setNmrPlaying(!nmrPlaying)}
+            className="px-2 py-0.5 rounded text-xs font-mono bg-gold/20 text-cream hover:bg-gold/40 transition-colors"
+          >
+            {nmrPlaying ? '⏸' : '▶'}
+          </button>
+          <input
+            type="range"
+            min={0}
+            max={Math.max(0, nmrTotalFrames - 1)}
+            value={nmrFrame}
+            onChange={(e) => { setNmrPlaying(false); setNmrFrame(Number(e.target.value)); }}
+            className="w-32 h-1 accent-gold cursor-pointer"
+          />
+          <span className="text-[10px] font-mono text-cream/60">
+            {nmrFrame + 1}/{nmrTotalFrames}
+          </span>
         </div>
       )}
 
