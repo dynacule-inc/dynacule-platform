@@ -54,6 +54,7 @@ export interface VizCommand {
 export interface VisibilityFlags {
   showRibbon: boolean;
   showAtoms: boolean;
+  showNonpolarH: boolean;
 }
 
 export type ColorScheme = 'element' | 'chain' | 'secstruct' | 'bfactor' | 'residueindex' | 'occupancy';
@@ -64,7 +65,7 @@ export const COLOR_SCHEMES: { value: ColorScheme; label: string }[] = [
   { value: 'secstruct', label: 'Secondary Structure' },
   { value: 'bfactor', label: 'B-Factor' },
   { value: 'residueindex', label: 'Rainbow (N→C)' },
-  { value: 'occupancy', label: 'Occupancy' },
+  { value: 'occupancy', label: 'Occupancy' }
 ];
 
 interface State {
@@ -122,29 +123,25 @@ interface State {
   setNmrTotalFrames: (val: number) => void;
 }
 
-export const useStore = create<State>((set) => ({
+export const useStore = create<State>((set, get) => ({
   // Projects
   projects: [],
   selectedProjectId: null,
   setProjects: (projects) => set({ projects }),
-  setSelectedProjectId: (selectedProjectId) => {
-    set({ selectedProjectId });
-  },
+  setSelectedProjectId: (selectedProjectId) => set({ selectedProjectId }),
 
   // Molecules
   molecules: [],
   selectedMolecule: null,
   setMolecules: (molecules) => set({ molecules }),
-  setSelectedMolecule: (selectedMolecule) => {
-    set({ selectedMolecule });
-  },
+  setSelectedMolecule: (selectedMolecule) => set({ selectedMolecule }),
 
   // Jobs
   jobs: [],
   jobStats: null,
   selectedJob: null,
   setJobs: (jobs) => set({ jobs }),
-  addOrUpdateJob: (job) =>
+  addOrUpdateJob: (job) => {
     set((state) => {
       const existing = state.jobs.findIndex((j) => j.id === job.id);
       if (existing >= 0) {
@@ -153,7 +150,8 @@ export const useStore = create<State>((set) => ({
         return { jobs: updated };
       }
       return { jobs: [job, ...state.jobs] };
-    }),
+    });
+  },
   setJobStats: (jobStats) => set({ jobStats }),
   setSelectedJob: (selectedJob) => set({ selectedJob }),
 
@@ -176,8 +174,8 @@ export const useStore = create<State>((set) => ({
   setColorScheme: (colorScheme) => set({ colorScheme }),
 
   // Visibility flags
-  visibilityFlags: { showRibbon: true, showAtoms: true },
-  setVisibilityFlags: (visibilityFlags) => set({ visibilityFlags }),
+  visibilityFlags: { showRibbon: true, showAtoms: true, showNonpolarH: false },
+  setVisibilityFlags: (flags) => set({ visibilityFlags: flags }),
 
   // NMR ensemble
   nmrEnsemble: false,
@@ -187,5 +185,5 @@ export const useStore = create<State>((set) => ({
   setNmrEnsemble: (nmrEnsemble) => set({ nmrEnsemble }),
   setNmrPlaying: (nmrPlaying) => set({ nmrPlaying }),
   setNmrFrame: (nmrFrame) => set({ nmrFrame }),
-  setNmrTotalFrames: (nmrTotalFrames) => set({ nmrTotalFrames }),
+  setNmrTotalFrames: (nmrTotalFrames) => set({ nmrTotalFrames })
 }));

@@ -89,21 +89,22 @@ export default function MoleculePanel() {
   };
 
   /* ── Visibility toggle helpers ───────────────────────────────────────── */
-  const toggleFlag = useCallback((key: 'showRibbon' | 'showAtoms') => {
+  const toggleFlag = useCallback((key: 'showRibbon' | 'showAtoms' | 'showNonpolarH') => {
     setVisibilityFlags({ ...visibilityFlags, [key]: !visibilityFlags[key] });
   }, [visibilityFlags, setVisibilityFlags]);
 
   const setAllProtein = useCallback((ribbon: boolean, atoms: boolean) => {
-    setVisibilityFlags({ showRibbon: ribbon, showAtoms: atoms });
+    setVisibilityFlags({ showRibbon: ribbon, showAtoms: atoms, showNonpolarH: visibilityFlags.showNonpolarH });
   }, [setVisibilityFlags]);
 
   const setAllLigand = useCallback((ribbon: boolean, atoms: boolean) => {
-    setVisibilityFlags({ showRibbon: ribbon, showAtoms: atoms });
+    setVisibilityFlags({ showRibbon: ribbon, showAtoms: atoms, showNonpolarH: visibilityFlags.showNonpolarH });
   }, [setVisibilityFlags]);
 
-  const handleContextAction = useCallback((target: 'protein' | 'ligand', action: 'show' | 'hide', what: 'atoms' | 'ribbon') => {
-    if (what === 'atoms') setVisibilityFlags({ showRibbon: visibilityFlags.showRibbon, showAtoms: action === 'show' });
-    else setVisibilityFlags({ showRibbon: action === 'show', showAtoms: visibilityFlags.showAtoms });
+  const handleContextAction = useCallback((target: 'protein' | 'ligand', action: 'show' | 'hide', what: 'atoms' | 'ribbon' | 'nonpolarH') => {
+    if (what === 'atoms') setVisibilityFlags({ showRibbon: visibilityFlags.showRibbon, showAtoms: action === 'show', showNonpolarH: visibilityFlags.showNonpolarH });
+    else if (what === 'nonpolarH') setVisibilityFlags({ showRibbon: visibilityFlags.showRibbon, showAtoms: visibilityFlags.showAtoms, showNonpolarH: action === 'show' });
+    else setVisibilityFlags({ showRibbon: action === 'show', showAtoms: visibilityFlags.showAtoms, showNonpolarH: visibilityFlags.showNonpolarH });
     setCtxMenu(null);
   }, [visibilityFlags, setVisibilityFlags]);
 
@@ -131,6 +132,12 @@ export default function MoleculePanel() {
             {visibilityFlags.showAtoms ? 'Atoms On' : 'Atoms Off'}
           </button>
         </div>
+        <div className={`${rowStyle(visibilityFlags.showNonpolarH)} border-t border-gold/5`}>
+          <span className="font-medium">Nonpolar H</span>
+          <button onClick={() => toggleFlag('showNonpolarH')} className={btnStyle(visibilityFlags.showNonpolarH)}>
+            {visibilityFlags.showNonpolarH ? 'H On' : 'H Off'}
+          </button>
+        </div>
         <div className="flex items-center justify-between px-6 py-1.5 text-[10px] font-mono border-t border-gold/5">
           <span className="text-cream/60">Color By</span>
           <select
@@ -153,7 +160,7 @@ export default function MoleculePanel() {
     return (
       <div
         ref={ctxRef}
-        className="fixed z-[100] bg-navy/80 backdrop-blur-lg border border-gold/30 rounded-lg shadow-2xl py-1 min-w-[170px]"
+        className="fixed z-[100] bg-navy/80 backdrop-blur border border-gold/30 rounded-lg shadow-2xl py-1 min-w-[170px]"
         style={{ left: ctxMenu.x, top: ctxMenu.y }}
         onClick={() => setCtxMenu(null)}
       >

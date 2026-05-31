@@ -28,7 +28,7 @@ const SEL_WATERS = 'HOH or water';
 
 // Show all atoms except nonpolar hydrogens (C–H bonds).
 // Polar H (bonded to N, O, or S within 1.3 Å) are kept — they indicate H-bond donors.
-const SEL_NO_NONPOLARH = '((not H) or (H within 1.3A of (N or O or S)))';
+const SEL_NO_NONPOLARH = 'not hydrogen or (hydro and (n.ne or o.ne or s.ne))';
 
 // Secstruct selectors for the Dynacule split representation.
 const SEL_HELIX = 'protein and helix';
@@ -154,6 +154,7 @@ async function applyPreset(
   preset: ViewPreset,
   stage: any,
   reprStore?: Record<string, any[]>,
+  showNonpolarH: boolean = false
 ) {
   component.removeAllRepresentations();
 
@@ -167,11 +168,13 @@ async function applyPreset(
   // Atom-level representations (ball+stick, licorice, spacefill, dot) should
   // exclude nonpolar hydrogens by default — they add visual noise without
   // chemical insight. Backbone/cartoon/tube/surface reps never render H anyway.
+  // However, when showNonpolarH is true, we include ALL hydrogens.
   const ATOM_REP_TYPES = new Set(['ball+stick', 'licorice', 'spacefill', 'dot']);
 
   function addRep(type: string, params: any, category: string): any {
     // Intersect atom-level selections with nonpolar-H exclusion
-    if (ATOM_REP_TYPES.has(type) && params.sele) {
+    // UNLESS showNonpolarH is true, in which case we show ALL hydrogens
+    if (ATOM_REP_TYPES.has(type) && params.sele && !showNonpolarH) {
       params = { ...params, sele: `(${params.sele}) and ${SEL_NO_NONPOLARH}` };
     }
     const repr = component.addRepresentation(type, params);
@@ -832,13 +835,12 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
     if (!nglReady || !selectedMolecule) return;
     const stage = stageRef.current;
     if (!stage) return;
-
     stage.eachComponent((c: any) => {
       if (c.name === 'loaded-molecule') {
-        applyPreset(c, viewPreset, stage, reprStoreRef.current);
+        applyPreset(c, viewPreset, stage, reprStoreRef.current, visibilityFlags.showNonpolarH);
       }
     });
-  }, [viewPreset, nglReady]);
+  }, [viewPreset, nglReady, selectedMolecule, visibilityFlags.showNonpolarH]);
 
   /* ── Visibility flags → toggle representations ─────────────────────────── */
   useEffect(() => {
@@ -1093,7 +1095,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
               <span className="text-[8px] ml-1">{presetDropdownOpen ? '▲' : '▼'}</span>
             </button>
             {presetDropdownOpen && (
-              <div className="absolute right-0 mt-1 w-64 max-h-[70vh] overflow-y-auto bg-navy/80 backdrop-blur-lg border border-gold/30 rounded-lg shadow-2xl z-50">
+              <div className="absolute right-0 mt-1 w-64 max-h-[70vh] overflow-y-auto bg-navy/80 backdrop-blur border border-gold/30 rounded-lg shadow-2xl z-50">
                 {PRESET_CATEGORIES.map((cat) => (
                   <div key={cat.label}>
                     <div className="px-3 py-1.5 text-[9px] uppercase tracking-widest text-gold font-mono border-b border-gold/10">
