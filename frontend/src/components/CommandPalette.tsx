@@ -129,17 +129,17 @@ export default function CommandPalette() {
       ? JSON.stringify(result.data, null, 2)
       : String(result.data);
     return (
-      <div className="p-4 space-y-3">
+      <div className="p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold text-navy">{result.title}</span>
-          <span className="text-green-500 text-[10px] font-mono">✓ Done</span>
+          <span className="text-sm font-semibold text-cream">{result.title}</span>
+          <span className="text-gold text-[10px] font-mono">✓ Done</span>
         </div>
-        <pre className="text-[10px] font-mono text-navy/80 bg-navy/5 rounded p-3 max-h-48 overflow-auto whitespace-pre-wrap border border-gold/10">
+        <pre className="text-[10px] font-mono text-cream/70 bg-cream/5 rounded-lg p-4 max-h-52 overflow-auto whitespace-pre-wrap border border-gold/10">
           {str}
         </pre>
         <button
           onClick={reset}
-          className="w-full py-2 text-xs font-mono text-navy/60 hover:text-navy bg-navy/5 hover:bg-navy/10 rounded transition-colors"
+          className="w-full py-2.5 text-xs font-mono text-cream/50 hover:text-cream bg-cream/5 hover:bg-cream/10 rounded-lg transition-colors"
         >
           Back to menu
         </button>
@@ -156,9 +156,9 @@ export default function CommandPalette() {
     const handle = handlers[action];
 
     return (
-      <div className="p-4 space-y-3">
-        <p className="text-xs font-mono text-navy/50">{view.title}</p>
-        <div className="flex gap-2">
+      <div className="p-5 space-y-4">
+        <p className="text-xs font-mono text-cream/50">{view.title}</p>
+        <div className="flex gap-3">
           <input
             ref={inputRef}
             type="text"
@@ -167,22 +167,22 @@ export default function CommandPalette() {
             onKeyDown={(e) => e.key === 'Enter' && handle()}
             placeholder="Enter SMILES string..."
             disabled={loading}
-            className="flex-1 px-3 py-2 text-xs font-mono bg-white/50 border border-gold/20 rounded text-navy placeholder:text-navy/30 outline-none focus:border-gold/60 transition-colors"
+            className="flex-1 px-4 py-3 text-xs font-mono bg-cream/5 border border-gold/20 rounded-lg text-cream placeholder:text-cream/30 outline-none focus:border-gold/60 transition-colors"
           />
           <button
             onClick={handle}
             disabled={loading || !smiles.trim()}
-            className="px-4 py-2 text-xs font-mono bg-navy text-cream rounded hover:bg-navy/90 disabled:opacity-40 transition-colors"
+            className="px-5 py-3 text-xs font-mono bg-gold text-navy rounded-lg hover:bg-gold/90 disabled:opacity-40 transition-colors"
           >
             {loading ? '...' : 'Run'}
           </button>
         </div>
         {error && (
-          <p className="text-[10px] font-mono text-red-500 break-words">{error}</p>
+          <p className="text-[10px] font-mono text-red-400 break-words">{error}</p>
         )}
         <button
           onClick={reset}
-          className="w-full py-2 text-xs font-mono text-navy/40 hover:text-navy transition-colors"
+          className="w-full py-2.5 text-xs font-mono text-cream/40 hover:text-cream/70 transition-colors"
         >
           Back
         </button>
@@ -204,148 +204,157 @@ export default function CommandPalette() {
   }
 
   return (
-      <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-sm flex items-start justify-center pt-24" onClick={close}>
-        <div className="w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 bg-navy/70 backdrop-blur-md flex items-start justify-center pt-20" onClick={close}>
+      <div className="w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
 
-          {/* ── SMILES Input Form ───────────────────────────────────── */}
-          {(view.stage === 'smiles-input') && (
-            <div className="bg-cream/95 backdrop-blur-md border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
-              {renderSmilesForm('create')}
-            </div>
-          )}
+        {/* ── SMILES Input Form ───────────────────────────────────── */}
+        {(view.stage === 'smiles-input') && (
+          <div className="bg-navy border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
+            {renderSmilesForm('create')}
+          </div>
+        )}
 
-          {/* ── Descriptors Input Form ───────────────────────────────── */}
-          {(view.stage === 'descriptors-input') && (
-            <div className="bg-cream/95 backdrop-blur-md border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
-              {renderSmilesForm('descriptors')}
-            </div>
-          )}
+        {/* ── Descriptors Input Form ───────────────────────────────── */}
+        {(view.stage === 'descriptors-input') && (
+          <div className="bg-navy border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
+            {renderSmilesForm('descriptors')}
+          </div>
+        )}
 
-          {/* ── Conformers Input Form ────────────────────────────────── */}
-          {(view.stage === 'conformers-input') && (
-            <div className="bg-cream/95 backdrop-blur-md border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
-              {renderSmilesForm('conformers')}
-            </div>
-          )}
+        {/* ── Conformers Input Form ────────────────────────────────── */}
+        {(view.stage === 'conformers-input') && (
+          <div className="bg-navy border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
+            {renderSmilesForm('conformers')}
+          </div>
+        )}
 
-          {/* ── Result View ───────────────────────────────────────────- */}
-          {(view.stage === 'result') && (
-            <div className="bg-cream/95 backdrop-blur-md border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
-              {renderResult()}
-            </div>
-          )}
+        {/* ── Result View ───────────────────────────────────────────- */}
+        {(view.stage === 'result') && (
+          <div className="bg-navy border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
+            {renderResult()}
+          </div>
+        )}
 
         {/* ── Docking Form ──────────────────────────────────────────- */}
         {(view.stage === 'docking-form') && (
-          <div className="bg-cream/95 backdrop-blur-md border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
+          <div className="bg-navy border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
             <DockingForm onClose={reset} onResult={(data) => showResult('Docking Job Created', data)} onError={showError} />
           </div>
         )}
 
         {/* ── MD Form ──────────────────────────────────────────────── */}
         {(view.stage === 'md-form') && (
-          <div className="bg-cream/95 backdrop-blur-md border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
+          <div className="bg-navy border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
             <MDForm onClose={reset} onResult={(data) => showResult('MD Job Created', data)} onError={showError} />
           </div>
         )}
 
         {/* ── QM Form ──────────────────────────────────────────────── */}
         {(view.stage === 'qm-form') && (
-          <div className="bg-cream/95 backdrop-blur-md border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
+          <div className="bg-navy border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
             <QMForm onClose={reset} onResult={(data) => showResult('QM Job Created', data)} onError={showError} />
           </div>
         )}
 
         {/* ── Main Menu ─────────────────────────────────────────────── */}
         {view.stage === 'main' && (
-          <div className="bg-cream/95 backdrop-blur-md border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
-            <Command label="Dynacule Command Palette">
+          <div className="bg-navy border border-gold/40 rounded-xl shadow-2xl overflow-hidden">
+            {/* Override cmdk defaults so Tailwind classes win */}
+            <style>{`
+              [cmdk-root] { background: transparent; }
+              [cmdk-input] { font-family: 'Roboto Mono', monospace; }
+              [cmdk-list] { padding: 6px; }
+              [cmdk-item] { border-radius: 6px; }
+              [cmdk-item][data-selected="true"] { background: rgba(201,168,76,0.2); }
+              [cmdk-group-heading] { padding: 4px 16px 2px; color: #c9a84c; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+              [cmdk-empty] { color: rgba(249,247,244,0.4); }
+            `}</style>
+            <Command label="Dynacule Command Palette" className="[&_[cmdk-input]]:w-full [&_[cmdk-input]]:px-5 [&_[cmdk-input]]:py-5 [&_[cmdk-input]]:bg-transparent [&_[cmdk-input]]:text-cream [&_[cmdk-input]]:outline-none [&_[cmdk-input]]:border-b [&_[cmdk-input]]:border-gold/10 [&_[cmdk-input]]:placeholder:text-cream/30 [&_[cmdk-list]]:max-h-96 [&_[cmdk-list]]:overflow-y-auto [&_[cmdk-list]]:p-2">
               <Command.Input
                 placeholder="Search pipelines..."
-                className="w-full px-4 py-4 bg-transparent text-navy outline-none border-b border-gold/10"
+                className="[&_[cmdk-input]]:placeholder:text-cream/40"
               />
-              <Command.List className="max-h-96 overflow-y-auto p-2">
-                <Command.Empty className="p-4 text-center text-navy/40 text-sm">No results found.</Command.Empty>
+              <Command.List className="[&_[cmdk-list]]:max-h-96 [&_[cmdk-list]]:overflow-y-auto [&_[cmdk-list]]:p-2">
+                <Command.Empty className="p-6 text-center text-cream/40 text-sm">No results found.</Command.Empty>
 
-                <Command.Group heading="Molecules" className="px-2 py-2 text-gold text-[10px] uppercase tracking-widest">
+                <Command.Group heading="Molecules" className="[&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:py-2">
                   <Command.Item
-                    className="px-4 py-3 rounded-md cursor-pointer hover:bg-gold/10 text-navy text-sm aria-selected:bg-gold/20"
+                    className="px-5 py-4 rounded-md cursor-pointer text-cream aria-selected:bg-gold/20 [&:hover]:bg-gold/15"
                     onSelect={() => goTo('smiles-input', 'Create from SMILES')}
                   >
                     <div>
-                      <div className="text-sm">Create from SMILES</div>
-                      <div className="text-[10px] text-navy/40 font-mono mt-0.5">Enter a SMILES string to generate 3D structure</div>
+                      <div className="text-sm font-medium text-cream">Create from SMILES</div>
+                      <div className="text-[10px] text-cream/50 font-mono mt-0.5">Enter a SMILES string to generate 3D structure</div>
                     </div>
                   </Command.Item>
                   <Command.Item
-                    className="px-4 py-3 rounded-md cursor-pointer hover:bg-gold/10 text-navy text-sm aria-selected:bg-gold/20"
+                    className="px-5 py-4 rounded-md cursor-pointer text-cream aria-selected:bg-gold/20 [&:hover]:bg-gold/15"
                     onSelect={() => {
                       close();
-                      // Trigger hidden file input
                       document.getElementById('mol-file-input')?.click();
                     }}
                   >
                     <div>
-                      <div className="text-sm">Upload Molecule File</div>
-                      <div className="text-[10px] text-navy/40 font-mono mt-0.5">Upload PDB, MOL, SDF, or MOL2 file</div>
+                      <div className="text-sm font-medium text-cream">Upload Molecule File</div>
+                      <div className="text-[10px] text-cream/50 font-mono mt-0.5">Upload PDB, MOL, SDF, or MOL2 file</div>
                     </div>
                   </Command.Item>
                 </Command.Group>
 
-                <Command.Group heading="Analysis" className="px-2 py-2 text-gold text-[10px] uppercase tracking-widest">
+                <Command.Group heading="Analysis" className="[&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:py-2">
                   <Command.Item
-                    className="px-4 py-3 rounded-md cursor-pointer hover:bg-gold/10 text-navy text-sm aria-selected:bg-gold/20"
+                    className="px-5 py-4 rounded-md cursor-pointer text-cream aria-selected:bg-gold/20 [&:hover]:bg-gold/15"
                     onSelect={() => goTo('descriptors-input', 'Calculate Molecular Descriptors')}
                   >
                     <div>
-                      <div className="text-sm">Calculate Descriptors</div>
-                      <div className="text-[10px] text-navy/40 font-mono mt-0.5">MolWt, LogP, HBD, HBA, TPSA, Ring Counts</div>
+                      <div className="text-sm font-medium text-cream">Calculate Descriptors</div>
+                      <div className="text-[10px] text-cream/50 font-mono mt-0.5">MolWt, LogP, HBD, HBA, TPSA, Ring Counts</div>
                     </div>
                   </Command.Item>
                   <Command.Item
-                    className="px-4 py-3 rounded-md cursor-pointer hover:bg-gold/10 text-navy text-sm aria-selected:bg-gold/20"
+                    className="px-5 py-4 rounded-md cursor-pointer text-cream aria-selected:bg-gold/20 [&:hover]:bg-gold/15"
                     onSelect={() => goTo('conformers-input', 'Generate Conformers')}
                   >
                     <div>
-                      <div className="text-sm">Generate Conformers</div>
-                      <div className="text-[10px] text-navy/40 font-mono mt-0.5">Generate and optimize 3D conformers from SMILES</div>
+                      <div className="text-sm font-medium text-cream">Generate Conformers</div>
+                      <div className="text-[10px] text-cream/50 font-mono mt-0.5">Generate and optimize 3D conformers from SMILES</div>
                     </div>
                   </Command.Item>
                 </Command.Group>
 
-                <Command.Group heading="Simulations" className="px-2 py-2 text-gold text-[10px] uppercase tracking-widest">
+                <Command.Group heading="Simulations" className="[&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:py-2">
                   <Command.Item
-                    className="px-4 py-3 rounded-md cursor-pointer hover:bg-gold/10 text-navy text-sm aria-selected:bg-gold/20"
+                    className="px-5 py-4 rounded-md cursor-pointer text-cream aria-selected:bg-gold/20 [&:hover]:bg-gold/15"
                     onSelect={() => goTo('docking-form', 'Setup Vina Docking')}
                   >
                     <div>
-                      <div className="text-sm">Setup Vina Docking</div>
-                      <div className="text-[10px] text-navy/40 font-mono mt-0.5">Configure and run AutoDock Vina molecular docking</div>
+                      <div className="text-sm font-medium text-cream">Setup Vina Docking</div>
+                      <div className="text-[10px] text-cream/50 font-mono mt-0.5">Configure and run AutoDock Vina molecular docking</div>
                     </div>
                   </Command.Item>
                   <Command.Item
-                    className="px-4 py-3 rounded-md cursor-pointer hover:bg-gold/10 text-navy text-sm aria-selected:bg-gold/20"
+                    className="px-5 py-4 rounded-md cursor-pointer text-cream aria-selected:bg-gold/20 [&:hover]:bg-gold/15"
                     onSelect={() => goTo('md-form', 'Run MD Simulation')}
                   >
                     <div>
-                      <div className="text-sm">Run MD Simulation</div>
-                      <div className="text-[10px] text-navy/40 font-mono mt-0.5">OpenMM molecular dynamics with AMBER forcefields</div>
+                      <div className="text-sm font-medium text-cream">Run MD Simulation</div>
+                      <div className="text-[10px] text-cream/50 font-mono mt-0.5">OpenMM molecular dynamics with AMBER forcefields</div>
                     </div>
                   </Command.Item>
                   <Command.Item
-                    className="px-4 py-3 rounded-md cursor-pointer hover:bg-gold/10 text-navy text-sm aria-selected:bg-gold/20"
+                    className="px-5 py-4 rounded-md cursor-pointer text-cream aria-selected:bg-gold/20 [&:hover]:bg-gold/15"
                     onSelect={() => goTo('qm-form', 'Run QM Calculation')}
                   >
                     <div>
-                      <div className="text-sm">Run QM Calculation</div>
-                      <div className="text-[10px] text-navy/40 font-mono mt-0.5">Psi4 or ORCA quantum mechanics calculation</div>
+                      <div className="text-sm font-medium text-cream">Run QM Calculation</div>
+                      <div className="text-[10px] text-cream/50 font-mono mt-0.5">Psi4 or ORCA quantum mechanics calculation</div>
                     </div>
                   </Command.Item>
                 </Command.Group>
 
-                <Command.Group heading="System" className="px-2 py-2 text-gold text-[10px] uppercase tracking-widest">
+                <Command.Group heading="System" className="[&_[cmdk-group-heading]]:px-4 [&_[cmdk-group-heading]]:py-2">
                   <Command.Item
-                    className="px-4 py-3 rounded-md cursor-pointer hover:bg-gold/10 text-navy text-sm aria-selected:bg-gold/20"
+                    className="px-5 py-4 rounded-md cursor-pointer text-cream aria-selected:bg-gold/20 [&:hover]:bg-gold/15"
                     onSelect={() => {
                       fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/projects/`, {
                         method: 'POST',
@@ -355,8 +364,8 @@ export default function CommandPalette() {
                     }}
                   >
                     <div>
-                      <div className="text-sm">Create New Project</div>
-                      <div className="text-[10px] text-navy/40 font-mono mt-0.5">Create a new project to organize molecules and jobs</div>
+                      <div className="text-sm font-medium text-cream">Create New Project</div>
+                      <div className="text-[10px] text-cream/50 font-mono mt-0.5">Create a new project to organize molecules and jobs</div>
                     </div>
                   </Command.Item>
                 </Command.Group>
@@ -418,55 +427,55 @@ function DockingForm({
   };
 
   return (
-    <div className="p-4 space-y-3">
-      <p className="text-xs font-mono text-navy/50">Setup Vina Docking</p>
+    <div className="p-5 space-y-4">
+      <p className="text-xs font-mono text-cream/50">Setup Vina Docking</p>
 
       <label className="block">
-        <span className="text-[10px] font-mono text-navy/60">Ligand SMILES</span>
+        <span className="text-[10px] font-mono text-cream/60">Ligand SMILES</span>
         <input value={smiles} onChange={(e) => setSmiles(e.target.value)}
-          className="w-full mt-1 px-3 py-2 text-xs font-mono bg-white/50 border border-gold/20 rounded text-navy outline-none focus:border-gold/60" />
+          className="w-full mt-1 px-4 py-3 text-xs font-mono bg-cream/5 border border-gold/20 rounded-lg text-cream outline-none focus:border-gold/60" />
       </label>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-3">
         <label className="block">
-          <span className="text-[10px] font-mono text-navy/60">Center X</span>
+          <span className="text-[10px] font-mono text-cream/60">Center X</span>
           <input value={centerX} onChange={(e) => setCenterX(e.target.value)}
-            className="w-full mt-1 px-2 py-1.5 text-xs font-mono bg-white/50 border border-gold/20 rounded text-navy outline-none focus:border-gold/60" />
+            className="w-full mt-1 px-3 py-2 text-xs font-mono bg-cream/5 border border-gold/20 rounded-lg text-cream outline-none focus:border-gold/60" />
         </label>
         <label className="block">
-          <span className="text-[10px] font-mono text-navy/60">Center Y</span>
+          <span className="text-[10px] font-mono text-cream/60">Center Y</span>
           <input value={centerY} onChange={(e) => setCenterY(e.target.value)}
-            className="w-full mt-1 px-2 py-1.5 text-xs font-mono bg-white/50 border border-gold/20 rounded text-navy outline-none focus:border-gold/60" />
+            className="w-full mt-1 px-3 py-2 text-xs font-mono bg-cream/5 border border-gold/20 rounded-lg text-cream outline-none focus:border-gold/60" />
         </label>
         <label className="block">
-          <span className="text-[10px] font-mono text-navy/60">Center Z</span>
+          <span className="text-[10px] font-mono text-cream/60">Center Z</span>
           <input value={centerZ} onChange={(e) => setCenterZ(e.target.value)}
-            className="w-full mt-1 px-2 py-1.5 text-xs font-mono bg-white/50 border border-gold/20 rounded text-navy outline-none focus:border-gold/60" />
+            className="w-full mt-1 px-3 py-2 text-xs font-mono bg-cream/5 border border-gold/20 rounded-lg text-cream outline-none focus:border-gold/60" />
         </label>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-3">
         <label className="block">
-          <span className="text-[10px] font-mono text-navy/60">Size X (Å)</span>
+          <span className="text-[10px] font-mono text-cream/60">Size X (A)</span>
           <input value={sizeX} onChange={(e) => setSizeX(e.target.value)}
-            className="w-full mt-1 px-2 py-1.5 text-xs font-mono bg-white/50 border border-gold/20 rounded text-navy outline-none focus:border-gold/60" />
+            className="w-full mt-1 px-3 py-2 text-xs font-mono bg-cream/5 border border-gold/20 rounded-lg text-cream outline-none focus:border-gold/60" />
         </label>
         <label className="block">
-          <span className="text-[10px] font-mono text-navy/60">Size Y (Å)</span>
+          <span className="text-[10px] font-mono text-cream/60">Size Y (A)</span>
           <input value={sizeY} onChange={(e) => setSizeY(e.target.value)}
-            className="w-full mt-1 px-2 py-1.5 text-xs font-mono bg-white/50 border border-gold/20 rounded text-navy outline-none focus:border-gold/60" />
+            className="w-full mt-1 px-3 py-2 text-xs font-mono bg-cream/5 border border-gold/20 rounded-lg text-cream outline-none focus:border-gold/60" />
         </label>
         <label className="block">
-          <span className="text-[10px] font-mono text-navy/60">Size Z (Å)</span>
+          <span className="text-[10px] font-mono text-cream/60">Size Z (A)</span>
           <input value={sizeZ} onChange={(e) => setSizeZ(e.target.value)}
-            className="w-full mt-1 px-2 py-1.5 text-xs font-mono bg-white/50 border border-gold/20 rounded text-navy outline-none focus:border-gold/60" />
+            className="w-full mt-1 px-3 py-2 text-xs font-mono bg-cream/5 border border-gold/20 rounded-lg text-cream outline-none focus:border-gold/60" />
         </label>
       </div>
 
-      <div className="flex gap-2 pt-1">
-        <button onClick={onClose} className="flex-1 py-2 text-xs font-mono text-navy/40 hover:text-navy transition-colors">Cancel</button>
+      <div className="flex gap-3 pt-1">
+        <button onClick={onClose} className="flex-1 py-2.5 text-xs font-mono text-cream/40 hover:text-cream/70 transition-colors">Cancel</button>
         <button onClick={handleSubmit} disabled={loading || !smiles.trim()}
-          className="flex-1 py-2 text-xs font-mono bg-navy text-cream rounded hover:bg-navy/90 disabled:opacity-40 transition-colors">
+          className="flex-1 py-2.5 text-xs font-mono bg-gold text-navy rounded-lg hover:bg-gold/90 disabled:opacity-40 transition-colors">
           {loading ? 'Submitting...' : 'Run Docking'}
         </button>
       </div>
@@ -514,35 +523,35 @@ function MDForm({
   };
 
   return (
-    <div className="p-4 space-y-3">
-      <p className="text-xs font-mono text-navy/50">Run MD Simulation</p>
+    <div className="p-5 space-y-4">
+      <p className="text-xs font-mono text-cream/50">Run MD Simulation</p>
       <label className="block">
-        <span className="text-[10px] font-mono text-navy/60">PDB Content</span>
+        <span className="text-[10px] font-mono text-cream/60">PDB Content</span>
         <textarea value={pdb} onChange={(e) => setPdb(e.target.value)} rows={3}
-          className="w-full mt-1 px-3 py-2 text-[10px] font-mono bg-white/50 border border-gold/20 rounded text-navy outline-none focus:border-gold/60 resize-none" />
+          className="w-full mt-1 px-4 py-3 text-[10px] font-mono bg-cream/5 border border-gold/20 rounded-lg text-cream outline-none focus:border-gold/60 resize-none" />
       </label>
       <select value={forcefield} onChange={(e) => setForcefield(e.target.value)}
-        className="w-full px-3 py-2 text-xs font-mono bg-white/50 border border-gold/20 rounded text-navy outline-none focus:border-gold/60">
-        <option value="amber14-all.xml">AMBER14 (all)</option>
-        <option value="amber14-all.xml,amber14/protein.ff14SB.xml">AMBER14 (ff14SB)</option>
-        <option value="charmm36.xml">CHARMM36</option>
+        className="w-full px-4 py-3 text-xs font-mono bg-cream/5 border border-gold/20 rounded-lg text-cream outline-none focus:border-gold/60">
+        <option value="amber14-all.xml" className="bg-navy">AMBER14 (all)</option>
+        <option value="amber14-all.xml,amber14/protein.ff14SB.xml" className="bg-navy">AMBER14 (ff14SB)</option>
+        <option value="charmm36.xml" className="bg-navy">CHARMM36</option>
       </select>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-3">
         <label className="block">
-          <span className="text-[10px] font-mono text-navy/60">Production Steps</span>
+          <span className="text-[10px] font-mono text-cream/60">Production Steps</span>
           <input value={steps} onChange={(e) => setSteps(e.target.value)}
-            className="w-full mt-1 px-2 py-1.5 text-xs font-mono bg-white/50 border border-gold/20 rounded text-navy outline-none focus:border-gold/60" />
+            className="w-full mt-1 px-3 py-2 text-xs font-mono bg-cream/5 border border-gold/20 rounded-lg text-cream outline-none focus:border-gold/60" />
         </label>
         <label className="block">
-          <span className="text-[10px] font-mono text-navy/60">Temperature (K)</span>
+          <span className="text-[10px] font-mono text-cream/60">Temperature (K)</span>
           <input value={temp} onChange={(e) => setTemp(e.target.value)}
-            className="w-full mt-1 px-2 py-1.5 text-xs font-mono bg-white/50 border border-gold/20 rounded text-navy outline-none focus:border-gold/60" />
+            className="w-full mt-1 px-3 py-2 text-xs font-mono bg-cream/5 border border-gold/20 rounded-lg text-cream outline-none focus:border-gold/60" />
         </label>
       </div>
-      <div className="flex gap-2 pt-1">
-        <button onClick={onClose} className="flex-1 py-2 text-xs font-mono text-navy/40 hover:text-navy transition-colors">Cancel</button>
+      <div className="flex gap-3 pt-1">
+        <button onClick={onClose} className="flex-1 py-2.5 text-xs font-mono text-cream/40 hover:text-cream/70 transition-colors">Cancel</button>
         <button onClick={handleSubmit} disabled={loading || !pdb.trim()}
-          className="flex-1 py-2 text-xs font-mono bg-navy text-cream rounded hover:bg-navy/90 disabled:opacity-40 transition-colors">
+          className="flex-1 py-2.5 text-xs font-mono bg-gold text-navy rounded-lg hover:bg-gold/90 disabled:opacity-40 transition-colors">
           {loading ? 'Submitting...' : 'Run MD'}
         </button>
       </div>
@@ -592,51 +601,51 @@ function QMForm({
   };
 
   return (
-    <div className="p-4 space-y-3">
-      <p className="text-xs font-mono text-navy/50">Run QM Calculation</p>
-      <div className="grid grid-cols-2 gap-2">
+    <div className="p-5 space-y-4">
+      <p className="text-xs font-mono text-cream/50">Run QM Calculation</p>
+      <div className="grid grid-cols-2 gap-3">
         <label className="block">
-          <span className="text-[10px] font-mono text-navy/60">Software</span>
+          <span className="text-[10px] font-mono text-cream/60">Software</span>
           <select value={software} onChange={(e) => setSoftware(e.target.value)}
-            className="w-full mt-1 px-2 py-1.5 text-xs font-mono bg-white/50 border border-gold/20 rounded text-navy outline-none focus:border-gold/60">
-            <option value="psi4">Psi4</option>
-            <option value="orca">ORCA</option>
+            className="w-full mt-1 px-3 py-2 text-xs font-mono bg-cream/5 border border-gold/20 rounded-lg text-cream outline-none focus:border-gold/60">
+            <option value="psi4" className="bg-navy">Psi4</option>
+            <option value="orca" className="bg-navy">ORCA</option>
           </select>
         </label>
         <label className="block">
-          <span className="text-[10px] font-mono text-navy/60">Method</span>
+          <span className="text-[10px] font-mono text-cream/60">Method</span>
           <select value={theory} onChange={(e) => setTheory(e.target.value)}
-            className="w-full mt-1 px-2 py-1.5 text-xs font-mono bg-white/50 border border-gold/20 rounded text-navy outline-none focus:border-gold/60">
-            <option value="b3lyp">B3LYP</option>
-            <option value="wb97x-d">ωB97X-D</option>
-            <option value="pbe0">PBE0</option>
-            <option value="mp2">MP2</option>
-            <option value="hf">HF</option>
+            className="w-full mt-1 px-3 py-2 text-xs font-mono bg-cream/5 border border-gold/20 rounded-lg text-cream outline-none focus:border-gold/60">
+            <option value="b3lyp" className="bg-navy">B3LYP</option>
+            <option value="wb97x-d" className="bg-navy">omegaB97X-D</option>
+            <option value="pbe0" className="bg-navy">PBE0</option>
+            <option value="mp2" className="bg-navy">MP2</option>
+            <option value="hf" className="bg-navy">HF</option>
           </select>
         </label>
       </div>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-3">
         <label className="block">
-          <span className="text-[10px] font-mono text-navy/60">Basis Set</span>
+          <span className="text-[10px] font-mono text-cream/60">Basis Set</span>
           <input value={basis} onChange={(e) => setBasis(e.target.value)}
-            className="w-full mt-1 px-2 py-1.5 text-xs font-mono bg-white/50 border border-gold/20 rounded text-navy outline-none focus:border-gold/60" />
+            className="w-full mt-1 px-3 py-2 text-xs font-mono bg-cream/5 border border-gold/20 rounded-lg text-cream outline-none focus:border-gold/60" />
         </label>
         <label className="block">
-          <span className="text-[10px] font-mono text-navy/60">Charge</span>
+          <span className="text-[10px] font-mono text-cream/60">Charge</span>
           <input value={charge} onChange={(e) => setCharge(e.target.value)}
-            className="w-full mt-1 px-2 py-1.5 text-xs font-mono bg-white/50 border border-gold/20 rounded text-navy outline-none focus:border-gold/60" />
+            className="w-full mt-1 px-3 py-2 text-xs font-mono bg-cream/5 border border-gold/20 rounded-lg text-cream outline-none focus:border-gold/60" />
         </label>
         <label className="block">
-          <span className="text-[10px] font-mono text-navy/60">Multiplicity</span>
+          <span className="text-[10px] font-mono text-cream/60">Multiplicity</span>
           <input value={mult} onChange={(e) => setMult(e.target.value)}
-            className="w-full mt-1 px-2 py-1.5 text-xs font-mono bg-white/50 border border-gold/20 rounded text-navy outline-none focus:border-gold/60" />
+            className="w-full mt-1 px-3 py-2 text-xs font-mono bg-cream/5 border border-gold/20 rounded-lg text-cream outline-none focus:border-gold/60" />
         </label>
       </div>
-      <div className="flex gap-2 pt-1">
-        <button onClick={onClose} className="flex-1 py-2 text-xs font-mono text-navy/40 hover:text-navy transition-colors">Cancel</button>
+      <div className="flex gap-3 pt-1">
+        <button onClick={onClose} className="flex-1 py-2.5 text-xs font-mono text-cream/40 hover:text-cream/70 transition-colors">Cancel</button>
         <button onClick={handleSubmit} disabled={loading}
-          className="flex-1 py-2 text-xs font-mono bg-navy text-cream rounded hover:bg-navy/90 disabled:opacity-40 transition-colors">
-          {loading ? 'Submitting...' : 'Run QM'}
+          className="flex-1 py-2.5 text-xs font-mono bg-gold text-navy rounded-lg hover:bg-gold/90 disabled:opacity-40 transition-colors">
+          {loading ? 'Calculating...' : 'Run QM'}
         </button>
       </div>
     </div>
