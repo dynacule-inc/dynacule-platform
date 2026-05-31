@@ -949,7 +949,11 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
   /* ── Trajectory frame control ──────────────────────────────────────────── */
   useEffect(() => {
     if (!trajCompRef.current) return;
-    try { trajCompRef.current.setFrame(trajFrame); } catch { /* noop */ }
+    try {
+      const traj = trajCompRef.current?.trajectory;
+      if (traj?.setFrame) traj.setFrame(trajFrame);
+      else trajCompRef.current.setFrame(trajFrame);
+    } catch { /* noop */ }
   }, [trajFrame]);
 
   /* ── NMR ensemble looping animation ────────────────────────────────────── */
@@ -966,7 +970,10 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
         lastTime = time;
         currentFrame = (currentFrame + 1) % nmrTotalFrames;
         setNmrFrame(currentFrame);
-        try { nmrCompRef.current?.setFrame(currentFrame); } catch { /* noop */ }
+        try {
+          const traj = nmrCompRef.current?.trajectory;
+          if (traj?.setFrame) traj.setFrame(currentFrame);
+        } catch { /* noop */ }
       }
       nmrAnimRef.current = requestAnimationFrame(animate);
     };
@@ -980,7 +987,10 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
   /* ── NMR manual frame control ───────────────────────────────────────────── */
   useEffect(() => {
     if (!nmrEnsemble || nmrPlaying || !nmrCompRef.current) return;
-    try { nmrCompRef.current.setFrame(nmrFrame); } catch { /* noop */ }
+    try {
+      const traj = nmrCompRef.current?.trajectory;
+      if (traj?.setFrame) traj.setFrame(nmrFrame);
+    } catch { /* noop */ }
   }, [nmrFrame, nmrEnsemble, nmrPlaying]);
 
   /* ── Picking mode cursor ──────────────────────────────────────────────── */
