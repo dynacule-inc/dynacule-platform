@@ -72,27 +72,22 @@ export default function MoleculePanel() {
 
   // ── Visibility toggle helpers ─────────────────────────────────────────
 
-  const toggleFlag = useCallback((key: keyof typeof visibilityFlags) => {
-    setVisibilityFlags({ ...visibilityFlags, [key]: !visibilityFlags[key] });
+  const toggleFlag = useCallback((key: 'showRibbon' | 'showAtoms') => {
+  setVisibilityFlags({ ...visibilityFlags, [key]: !visibilityFlags[key] });
   }, [visibilityFlags, setVisibilityFlags]);
 
   const setAllProtein = useCallback((ribbon: boolean, atoms: boolean) => {
-    setVisibilityFlags({ ...visibilityFlags, proteinRibbon: ribbon, proteinAtoms: atoms });
-  }, [visibilityFlags, setVisibilityFlags]);
+  setVisibilityFlags({ showRibbon: ribbon, showAtoms: atoms });
+  }, [setVisibilityFlags]);
 
   const setAllLigand = useCallback((ribbon: boolean, atoms: boolean) => {
-    setVisibilityFlags({ ...visibilityFlags, ligandRibbon: ribbon, ligandAtoms: atoms });
-  }, [visibilityFlags, setVisibilityFlags]);
+  setVisibilityFlags({ showRibbon: ribbon, showAtoms: atoms });
+  }, [setVisibilityFlags]);
 
   const handleContextAction = useCallback((target: 'protein' | 'ligand', action: 'show' | 'hide', what: 'atoms' | 'ribbon') => {
-    if (target === 'protein') {
-      if (what === 'atoms') setVisibilityFlags({ ...visibilityFlags, proteinAtoms: action === 'show' });
-      else setVisibilityFlags({ ...visibilityFlags, proteinRibbon: action === 'show' });
-    } else {
-      if (what === 'atoms') setVisibilityFlags({ ...visibilityFlags, ligandAtoms: action === 'show' });
-      else setVisibilityFlags({ ...visibilityFlags, ligandRibbon: action === 'show' });
-    }
-    setCtxMenu(null);
+  if (what === 'atoms') setVisibilityFlags({ showRibbon: visibilityFlags.showRibbon, showAtoms: action === 'show' });
+  else setVisibilityFlags({ showRibbon: action === 'show', showAtoms: visibilityFlags.showAtoms });
+  setCtxMenu(null);
   }, [visibilityFlags, setVisibilityFlags]);
 
   // ── Subtree row renderer ─────────────────────────────────────────────
@@ -112,30 +107,20 @@ export default function MoleculePanel() {
 
     return (
       <div className="bg-navy/40 border-t border-gold/10">
-        {/* ── Protein row ──────────────────────────────────────────────── */}
-        <div className={rowStyle(visibilityFlags.proteinAtoms || visibilityFlags.proteinRibbon)}>
-          <span className="font-medium">Protein</span>
-          <div className="flex gap-1">
-            <button onClick={() => toggleFlag('proteinRibbon')} className={btnStyle(visibilityFlags.proteinRibbon)}>
-              {visibilityFlags.proteinRibbon ? 'Ribbon On' : 'Ribbon Off'}
-            </button>
-            <button onClick={() => toggleFlag('proteinAtoms')} className={btnStyle(visibilityFlags.proteinAtoms)}>
-              {visibilityFlags.proteinAtoms ? 'Atoms On' : 'Atoms Off'}
-            </button>
-          </div>
+        {/* ── Ribbon row ───────────────────────────────────────────────── */}
+        <div className={rowStyle(visibilityFlags.showRibbon)}>
+          <span className="font-medium">Ribbon</span>
+          <button onClick={() => toggleFlag('showRibbon')} className={btnStyle(visibilityFlags.showRibbon)}>
+            {visibilityFlags.showRibbon ? 'Ribbon On' : 'Ribbon Off'}
+          </button>
         </div>
 
-        {/* ── Others (non-protein) row ─────────────────────────────────── */}
-        <div className={`${rowStyle(visibilityFlags.ligandAtoms || visibilityFlags.ligandRibbon)} border-t border-gold/5`}>
-          <span className="font-medium">Others</span>
-          <div className="flex gap-1">
-            <button onClick={() => toggleFlag('ligandRibbon')} className={btnStyle(visibilityFlags.ligandRibbon)}>
-              {visibilityFlags.ligandRibbon ? 'Ribbon On' : 'Ribbon Off'}
-            </button>
-            <button onClick={() => toggleFlag('ligandAtoms')} className={btnStyle(visibilityFlags.ligandAtoms)}>
-              {visibilityFlags.ligandAtoms ? 'Atoms On' : 'Atoms Off'}
-            </button>
-          </div>
+        {/* ── Atoms row ────────────────────────────────────────────────── */}
+        <div className={`${rowStyle(visibilityFlags.showAtoms)} border-t border-gold/5`}>
+          <span className="font-medium">Atoms</span>
+          <button onClick={() => toggleFlag('showAtoms')} className={btnStyle(visibilityFlags.showAtoms)}>
+            {visibilityFlags.showAtoms ? 'Atoms On' : 'Atoms Off'}
+          </button>
         </div>
 
         {/* ── Color by row ────────────────────────────────────────────── */}

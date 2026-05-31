@@ -51,10 +51,8 @@ export interface VizCommand {
 }
 
 export interface VisibilityFlags {
-  proteinAtoms: boolean;
-  proteinRibbon: boolean;
-  ligandAtoms: boolean;
-  ligandRibbon: boolean;
+  showRibbon: boolean;
+  showAtoms: boolean;
 }
 
 export type ColorScheme = 'element' | 'chain' | 'secstruct' | 'bfactor' | 'residueindex' | 'occupancy';
@@ -167,6 +165,6 @@ export const useStore = create<State>((set) => ({
   setColorScheme: (colorScheme) => set({ colorScheme }),
 
   // Visibility flags
-  visibilityFlags: { proteinAtoms: true, proteinRibbon: true, ligandAtoms: true, ligandRibbon: true },
+  visibilityFlags: { showRibbon: true, showAtoms: true },
   setVisibilityFlags: (visibilityFlags) => set({ visibilityFlags }),
 }));

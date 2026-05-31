@@ -1410,8 +1410,17 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
   useEffect(() => {
     if (!nglReady || !selectedMolecule) return;
 
+    // Map the 2 user flags (showRibbon, showAtoms) to the 4 stored repr categories
+    const categoryMap: Record<string, 'showRibbon' | 'showAtoms'> = {
+      proteinRibbon: 'showRibbon',
+      ligandRibbon: 'showRibbon',
+      proteinAtoms: 'showAtoms',
+      ligandAtoms: 'showAtoms',
+    };
+
     ['proteinRibbon', 'proteinAtoms', 'ligandAtoms', 'ligandRibbon'].forEach((cat) => {
-      const visible = visibilityFlags[cat as keyof typeof visibilityFlags];
+      const flag = categoryMap[cat];
+      const visible = visibilityFlags[flag];
       const reprs = reprStoreRef.current[cat] || [];
       reprs.forEach((repr: any) => {
         try { repr.setVisibility(visible); } catch {}
