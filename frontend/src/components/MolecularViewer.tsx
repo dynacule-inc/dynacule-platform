@@ -26,6 +26,10 @@ const SEL_NEAR_PROT = `(protein within 8A of (${SEL_SMALL_MOL}))`;
 // Water molecules only.
 const SEL_WATERS = 'HOH or water';
 
+// Show all atoms except nonpolar hydrogens (C–H bonds).
+// Polar H (bonded to N, O, or S within 1.3 Å) are kept — they indicate H-bond donors.
+const SEL_NO_NONPOLARH = '((not H) or (H within 1.3A of (N or O or S)))';
+
 // Secstruct selectors for the Dynacule split representation.
 const SEL_HELIX = 'protein and helix';
 const SEL_SHEET  = 'protein and sheet';
@@ -160,7 +164,16 @@ async function applyPreset(
     reprStore.ligandRibbon  = [];
   }
 
+  // Atom-level representations (ball+stick, licorice, spacefill, dot) should
+  // exclude nonpolar hydrogens by default — they add visual noise without
+  // chemical insight. Backbone/cartoon/tube/surface reps never render H anyway.
+  const ATOM_REP_TYPES = new Set(['ball+stick', 'licorice', 'spacefill', 'dot']);
+
   function addRep(type: string, params: any, category: string): any {
+    // Intersect atom-level selections with nonpolar-H exclusion
+    if (ATOM_REP_TYPES.has(type) && params.sele) {
+      params = { ...params, sele: `(${params.sele}) and ${SEL_NO_NONPOLARH}` };
+    }
     const repr = component.addRepresentation(type, params);
     if (repr && reprStore) reprStore[category].push(repr);
     return repr;
@@ -787,13 +800,16 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
         comp.setName('loaded-molecule');
         await applyPreset(comp, viewPreset, stage, reprStoreRef.current);
 
-        // Detect NMR ensemble: multi-model structure that isn't MD data
-        const numFrames = comp?.trajectory?.numFrames ?? 0;
+        // Detect NMR ensemble: multi-model structure
+        // NGL stores models as structure.frames when loaded with asTrajectory
+        const numFrames = comp?.structure?.frames?.length ?? 0;
         if (numFrames > 1) {
+          // Create a trajectory component so we can step through frames
+          const trajComp = comp.addTrajectory();
+          nmrCompRef.current = trajComp;
           setNmrEnsemble(true);
           setNmrTotalFrames(numFrames);
           setNmrFrame(0);
-          nmrCompRef.current = comp;
           setNmrPlaying(true); // auto-play NMR ensemble loop
         }
       }
@@ -900,7 +916,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
           const blob = new Blob([vizCommand.pdbData], { type: 'text/plain' });
           const comp = await stage.loadFile(blob, { ext: 'pdb', defaultRepresentation: false });
           if (comp) {
-            comp.addRepresentation('ball+stick', { color: 'element', colorScheme: elementColorScheme(), radius: 0.3, multipleBond: true, opacity: 1 });
+            comp.addRepresentation('ball+stick', { color: 'element', colorScheme: elementColorScheme(), radius: 0.3, multipleBond: true, opacity: 1, sele: SEL_NO_NONPOLARH });
             comp.addRepresentation('label', { labelType: 'text', color: '#e67e22', fontSize: 0.5, showOption: 0 });
             comp.setName('docking-ligand');
             overlayRef.current = comp;
@@ -915,7 +931,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
           const comp = await stage.loadFile(blob, { ext: 'pdb', defaultRepresentation: false, asTrajectory: true });
           if (comp) {
             comp.addRepresentation('ribbon', { color: 'element', colorScheme: elementColorScheme(), subdiv: 2, opacity: 1 });
-            comp.addRepresentation('ball+stick', { color: 'element', colorScheme: elementColorScheme(), radius: 0.2, sele: SEL_IONS_AND_LIGAND });
+            comp.addRepresentation('ball+stick', { color: 'element', colorScheme: elementColorScheme(), radius: 0.2, sele: `(${SEL_IONS_AND_LIGAND}) and ${SEL_NO_NONPOLARH}` });
             comp.setName('md-trajectory');
             trajCompRef.current = comp;
           }
