@@ -1260,6 +1260,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
     vizCommand, setVizCommand,
     trajFrame,
     viewPreset, setViewPreset,
+    visibilityFlags,
   } = useStore();
 
   /**
@@ -1372,6 +1373,57 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewPreset, nglReady]);
+
+  /* ── Visibility flags → toggle representations ─────────────────────── */
+  useEffect(() => {
+    if (!nglReady || !stageRef.current || !selectedMolecule) return;
+    const stage = stageRef.current;
+
+    stage.eachComponent((c: any) => {
+      if (c.name !== 'loaded-molecule') return;
+      if (!c.reprList) return;
+
+      c.reprList.forEach((repr: any) => {
+        try {
+          const t = (repr.type || '').toLowerCase();
+          const isBackbone = ['cartoon', 'ribbon', 'tube', 'backbone', 'surface', 'dot'].includes(t);
+          const isAtom = ['ball+stick', 'licorice', 'spacefill', 'line', 'contact', 'hyperball'].includes(t);
+          const isLigandType = ['licorice', 'spacefill'].includes(t);
+
+          // Try to read the selection string to determine protein vs ligand
+          // NGL stores it on the repr object or in params
+          let sele = '';
+          try { sele = (repr.sele || repr.selection || (repr.params && repr.params.sele) || '').toLowerCase(); } catch {}
+
+          const targetsProtein = sele.includes('protein') || sele.includes('ca ') || sele.includes('helix')
+            || sele.includes('sheet') || sele.includes('coil') || sele.includes('nearprot')
+            || sele.includes('aro') || sele.includes('asp') || sele.includes('glu')
+            || sele.includes('lys') || sele.includes('arg') || sele.includes('his')
+            || sele.includes('sg');
+          const targetsLigand = sele.includes('ligandonly') || sele.includes('not protein')
+            || sele === '' // empty sele = whole component = fallback
+            || (sele.includes('f ') || sele.includes('cl ') || sele.includes('br ') || sele.includes(' i'));
+
+          // Categorize
+          let category: keyof typeof visibilityFlags | null = null;
+          if (targetsProtein && isBackbone) category = 'proteinRibbon';
+          else if (targetsProtein && isAtom) category = 'proteinAtoms';
+          else if (targetsLigand && isAtom) category = 'ligandAtoms';
+          else if (targetsLigand && isBackbone) category = 'ligandRibbon';
+          // Fallback by type-only heuristic
+          else if (isBackbone) category = 'proteinRibbon';
+          else if (isAtom) category = 'proteinAtoms';
+          else if (isLigandType) category = 'ligandAtoms';
+
+          if (category) {
+            repr.setVisibility(visibilityFlags[category]);
+          }
+        } catch {
+          // silently skip representations we can't inspect
+        }
+      });
+    });
+  }, [visibilityFlags, nglReady, selectedMolecule]);
 
   /* ── Viz command handling (docking overlay, MD traj, QM) ───────────────── */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

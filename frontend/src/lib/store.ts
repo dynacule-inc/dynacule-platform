@@ -50,6 +50,13 @@ export interface VizCommand {
   energyData?: { label: string; value: number; unit: string }[];
 }
 
+export interface VisibilityFlags {
+  proteinAtoms: boolean;
+  proteinRibbon: boolean;
+  ligandAtoms: boolean;
+  ligandRibbon: boolean;
+}
+
 interface State {
   // Project state
   projects: Project[];
@@ -85,6 +92,10 @@ interface State {
   // View preset state
   viewPreset: ViewPreset;
   setViewPreset: (preset: ViewPreset) => void;
+
+  // Visibility flags
+  visibilityFlags: VisibilityFlags;
+  setVisibilityFlags: (flags: VisibilityFlags) => void;
 }
 
 export const useStore = create<State>((set) => ({
@@ -135,4 +146,8 @@ export const useStore = create<State>((set) => ({
   // View preset
   viewPreset: 'dynacule',
   setViewPreset: (viewPreset) => set({ viewPreset }),
+
+  // Visibility flags
+  visibilityFlags: { proteinAtoms: true, proteinRibbon: true, ligandAtoms: true, ligandRibbon: true },
+  setVisibilityFlags: (visibilityFlags) => set({ visibilityFlags }),
 }));
