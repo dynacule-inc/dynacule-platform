@@ -57,6 +57,17 @@ export interface VisibilityFlags {
   ligandRibbon: boolean;
 }
 
+export type ColorScheme = 'element' | 'chain' | 'secstruct' | 'bfactor' | 'residueindex' | 'occupancy';
+
+export const COLOR_SCHEMES: { value: ColorScheme; label: string }[] = [
+  { value: 'element', label: 'Element (CPK)' },
+  { value: 'chain', label: 'Chain' },
+  { value: 'secstruct', label: 'Secondary Structure' },
+  { value: 'bfactor', label: 'B-Factor' },
+  { value: 'residueindex', label: 'Rainbow (N→C)' },
+  { value: 'occupancy', label: 'Occupancy' },
+];
+
 interface State {
   // Project state
   projects: Project[];
@@ -92,6 +103,10 @@ interface State {
   // View preset state
   viewPreset: ViewPreset;
   setViewPreset: (preset: ViewPreset) => void;
+
+  // Color scheme
+  colorScheme: ColorScheme;
+  setColorScheme: (scheme: ColorScheme) => void;
 
   // Visibility flags
   visibilityFlags: VisibilityFlags;
@@ -146,6 +161,10 @@ export const useStore = create<State>((set) => ({
   // View preset
   viewPreset: 'dynacule',
   setViewPreset: (viewPreset) => set({ viewPreset }),
+
+  // Color scheme
+  colorScheme: 'element',
+  setColorScheme: (colorScheme) => set({ colorScheme }),
 
   // Visibility flags
   visibilityFlags: { proteinAtoms: true, proteinRibbon: true, ligandAtoms: true, ligandRibbon: true },

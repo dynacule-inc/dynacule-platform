@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { useStore } from '@/lib/store';
+import { useStore, COLOR_SCHEMES } from '@/lib/store';
 import { moleculeApi, type MoleculeData } from '@/lib/moleculeApi';
 
 export default function MoleculePanel() {
-  const { molecules, setMolecules, selectedMolecule, setSelectedMolecule, visibilityFlags, setVisibilityFlags } = useStore();
+  const { molecules, setMolecules, selectedMolecule, setSelectedMolecule, visibilityFlags, setVisibilityFlags, colorScheme, setColorScheme } = useStore();
   const [smilesInput, setSmilesInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -136,6 +136,22 @@ export default function MoleculePanel() {
               {visibilityFlags.ligandAtoms ? 'Atoms On' : 'Atoms Off'}
             </button>
           </div>
+        </div>
+
+        {/* ── Color by row ────────────────────────────────────────────── */}
+        <div className="flex items-center justify-between px-6 py-1.5 text-[10px] font-mono border-t border-gold/5">
+          <span className="text-cream/60">Color By</span>
+          <select
+            value={colorScheme}
+            onChange={(e) => setColorScheme(e.target.value as typeof colorScheme)}
+            className="bg-cream/10 border border-gold/20 rounded text-cream text-[9px] font-mono px-2 py-1 outline-none focus:border-gold/60 cursor-pointer"
+          >
+            {COLOR_SCHEMES.map((s) => (
+              <option key={s.value} value={s.value} className="bg-navy text-cream">
+                {s.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
     );
