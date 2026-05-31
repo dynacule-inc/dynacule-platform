@@ -119,7 +119,7 @@ function elementColorScheme() {
  * @param component  NGL StructureComponent / RepresentationComponent
  * @param preset     Active view preset
  * @param stage      NGL Stage (passed for potential shape/shell use)
- * @param nearLigand Selection string targeting atoms within 10A of any
+ * @param nearLigand Selection string targeting atoms within 8A of any
  *                   non-protein atom (ligand, waters, ions, metals).
  *                   Passed as '' when no such atoms exist in the structure.
  */
@@ -136,8 +136,8 @@ async function applyPreset(
   const elemCol = elementColorScheme();
 
   /* ── Near-ligand protein selection ─────────────────────────────────────── */
-  // Protein atoms within 10A of ligand/non-water non-protein atoms
-  const nearProt = nearLigand ? `(protein within 10A of (${nearLigand}))` : '';
+  // Protein atoms within 8A of ligand/non-water non-protein atoms
+  const nearProt = nearLigand ? `(protein within 8A of (${nearLigand}))` : '';
 
   /* ── Non-water non-protein selection (actual small-molecule ligands) ──────── */
   // Excludes HOH (waters), NA/CL/K/MG/CA/ZN/FE/... (ions)
@@ -183,7 +183,7 @@ async function applyPreset(
         opacity:       1,
         Sele:         ligandOnly,
       });
-      // Ball+stick: protein atoms within 10A of ligand (sidechains + CA)
+      // Ball+stick: protein atoms within 8A of ligand (sidechains + CA)
       if (nearProt) {
         component.addRepresentation('ball+stick', {
           color:        'element',
@@ -411,11 +411,30 @@ async function applyPreset(
 
     /* ── Standard CPK Licorice ──────────────────────────────────────────── */
     case 'standard-cpk-licorice': {
-      component.addRepresentation('licorice', {
+      component.addRepresentation('cartoon', {
         color:       'element',
         colorScheme: elemCol,
         Sele:        'protein',
+        smoothSheet: true,
+        subdiv:      5,
+        scale:       4.0,
       });
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.3,
+        multipleBond:  true,
+        Sele:         ligandOnly,
+      });
+      if (nearProt) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.2,
+          multipleBond:  true,
+          Sele:         nearProt,
+        });
+      }
       break;
     }
 
@@ -432,12 +451,28 @@ async function applyPreset(
 
     /* ── VDW Spacefill ──────────────────────────────────────────────────── */
     case 'vdw-spacefill': {
-      component.addRepresentation('spacefill', {
+      component.addRepresentation('cartoon', {
         color:       'element',
         colorScheme: elemCol,
         Sele:        'protein',
+        smoothSheet: true,
+        subdiv:      5,
+        scale:       4.0,
+      });
+      component.addRepresentation('spacefill', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        ligandOnly,
         radius:      1.0,
       });
+      if (nearProt) {
+        component.addRepresentation('spacefill', {
+          color:       'element',
+          colorScheme: elemCol,
+          Sele:        nearProt,
+          radius:      1.0,
+        });
+      }
       break;
     }
 
@@ -544,10 +579,13 @@ async function applyPreset(
 
     /* ── Polar Contacts ─────────────────────────────────────────────────── */
     case 'polar-contacts': {
-      component.addRepresentation('line', {
+      component.addRepresentation('cartoon', {
         color:       'element',
         colorScheme: elemCol,
         Sele:        'protein',
+        smoothSheet: true,
+        subdiv:      5,
+        scale:       3.0,
       });
       component.addRepresentation('ball+stick', {
         color:        'element',
@@ -570,10 +608,13 @@ async function applyPreset(
 
     /* ── Halogen Bonds ──────────────────────────────────────────────────── */
     case 'halogen-bonds': {
-      component.addRepresentation('line', {
+      component.addRepresentation('cartoon', {
         color:       'element',
         colorScheme: elemCol,
         Sele:        'protein',
+        smoothSheet: true,
+        subdiv:      5,
+        scale:       3.0,
       });
       component.addRepresentation('ball+stick', {
         color:        'element',
@@ -607,7 +648,7 @@ async function applyPreset(
         colorScheme:  elemCol,
         radius:        0.3,
         multipleBond:  true,
-        Sele:         'ARO',
+        Sele:         `ARO${nearProt ? ` and (${nearProt})` : ''}`,
       });
       component.addRepresentation('ball+stick', {
         color:        'element',
@@ -775,20 +816,28 @@ async function applyPreset(
 
     /* ── Partial Charge Map ──────────────────────────────────────────────── */
     case 'partial-charge-map': {
+      component.addRepresentation('cartoon', {
+        color:       'element',
+        colorScheme: elemCol,
+        Sele:        'protein',
+        smoothSheet: true,
+        subdiv:      5,
+        scale:       3.0,
+      });
       component.addRepresentation('ball+stick', {
         color:        'element',
         colorScheme:  elemCol,
         radius:        0.2,
         multipleBond:  true,
-        Sele:         'protein',
+        Sele:         ligandOnly,
       });
-      if (nearLigand) {
+      if (nearProt) {
         component.addRepresentation('ball+stick', {
           color:        'element',
           colorScheme:  elemCol,
-          radius:        0.25,
+          radius:        0.18,
           multipleBond:  true,
-          Sele:         ligandOnly,
+          Sele:         nearProt,
         });
       }
       break;
@@ -796,17 +845,29 @@ async function applyPreset(
 
     /* ── Aromaticity Highlight ──────────────────────────────────────────── */
     case 'aromaticity-highlight': {
-      component.addRepresentation('line', {
+      component.addRepresentation('cartoon', {
         color:       'element',
         colorScheme: elemCol,
         Sele:        'protein',
+        smoothSheet: true,
+        subdiv:      5,
+        scale:       3.0,
       });
+      if (nearProt) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.3,
+          multipleBond:  true,
+          Sele:         `(ARO and (${nearProt}))`,
+        });
+      }
       component.addRepresentation('ball+stick', {
         color:        'element',
         colorScheme:  elemCol,
-        radius:        0.3,
+        radius:        0.25,
         multipleBond:  true,
-        Sele:         'ARO',
+        Sele:         ligandOnly,
       });
       break;
     }
@@ -904,18 +965,30 @@ async function applyPreset(
 
     /* ── Dynamic Cross-Correlation Map ──────────────────────────────────── */
     case 'dccm': {
-      component.addRepresentation('line', {
+      component.addRepresentation('cartoon', {
         color:       'element',
         colorScheme: elemCol,
         Sele:        'protein',
+        smoothSheet: true,
+        subdiv:      5,
+        scale:       3.0,
       });
       component.addRepresentation('ball+stick', {
         color:        'element',
         colorScheme:  elemCol,
         radius:        0.15,
         multipleBond:  true,
-        Sele:         'CA',
+        Sele:         ligandOnly,
       });
+      if (nearProt) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.12,
+          multipleBond:  true,
+          Sele:         nearProt,
+        });
+      }
       break;
     }
 
@@ -964,18 +1037,23 @@ async function applyPreset(
 
     /* ── Salt Bridge Network ─────────────────────────────────────────────── */
     case 'salt-bridge-network': {
-      component.addRepresentation('line', {
+      component.addRepresentation('cartoon', {
         color:       'element',
         colorScheme: elemCol,
         Sele:        'protein',
+        smoothSheet: true,
+        subdiv:      5,
+        scale:       3.0,
       });
-      component.addRepresentation('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.3,
-        multipleBond:  true,
-        Sele:         'ASP or GLU or LYS or ARG or HIS',
-      });
+      if (nearProt) {
+        component.addRepresentation('ball+stick', {
+          color:        'element',
+          colorScheme:  elemCol,
+          radius:        0.3,
+          multipleBond:  true,
+          Sele:         `((ASP or GLU or LYS or ARG or HIS) and (${nearProt}))`,
+        });
+      }
       break;
     }
 
@@ -1030,16 +1108,26 @@ async function applyPreset(
 
     /* ── Difference Map (Fo-Fc) ──────────────────────────────────────────── */
     case 'difference-map-fofc': {
-      component.addRepresentation('line', {
+      component.addRepresentation('cartoon', {
         color:       'element',
         colorScheme: elemCol,
         Sele:        'protein',
+        smoothSheet: true,
+        subdiv:      5,
+        scale:       3.0,
       });
       component.addRepresentation('surface', {
         color:            '#ff6b6b',
         opacity:          0.15,
         surfaceType:       'av',
         surfaceSelection:  'protein',
+      });
+      component.addRepresentation('ball+stick', {
+        color:        'element',
+        colorScheme:  elemCol,
+        radius:        0.3,
+        multipleBond:  true,
+        Sele:         ligandOnly,
       });
       break;
     }
@@ -1133,10 +1221,13 @@ async function applyPreset(
 
     /* ── Ramachandran Outliers ───────────────────────────────────────────── */
     case 'ramachandran-outliers': {
-      component.addRepresentation('line', {
+      component.addRepresentation('cartoon', {
         color:       'element',
         colorScheme: elemCol,
         Sele:        'protein',
+        smoothSheet: true,
+        subdiv:      5,
+        scale:       3.0,
       });
       component.addRepresentation('spacefill', {
         color:  '#ff0000',
@@ -1173,7 +1264,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
 
   /**
    * NGL selection string for all non-protein atoms in the loaded structure.
-   * Used to derive the "within 10A of ligand" protein sub-selection.
+   * Used to derive the "within 8A of ligand" protein sub-selection.
    * Reset to '' on every new molecule load.
    */
   const ligandAtomsSel = useRef<string>('');
