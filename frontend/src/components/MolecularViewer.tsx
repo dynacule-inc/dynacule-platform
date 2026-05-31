@@ -123,7 +123,7 @@ function elementColorScheme() {
  *                   non-protein atom (ligand, waters, ions, metals).
  *                   Passed as '' when no such atoms exist in the structure.
  * @param reprStore  Object with arrays proteinRibbon, proteinAtoms,
- *                   ligandAtoms, ligandRibbon to collect repr refs.
+ *                   ligandAtoms, ligandRibbon (populated by addRep helper)
  */
 async function applyPreset(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -132,12 +132,10 @@ async function applyPreset(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   stage: any,
   nearLigand: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   reprStore?: Record<string, any[]>,
 ) {
   component.removeAllRepresentations();
 
-  // Clear and initialize repr store
   if (reprStore) {
     reprStore.proteinRibbon = [];
     reprStore.proteinAtoms = [];
@@ -164,385 +162,140 @@ async function applyPreset(
   const ligandOnly = 'not (protein or HOH or NA or CL or K or MG or CA or ZN or FE or MN or CO or CU)';
 
   switch (preset) {
+    /* ══════════════════════════════════════════════════════════════════════ */
+    /*  Standard Topology & Structure                                       */
+    /* ══════════════════════════════════════════════════════════════════════ */
+
     /* ── Dynacule ────────────────────────────────────────────────────────── */
     case 'dynacule': {
-      // CA-only cartoon: helices — scale 10-12 occludes any underlying CA tube
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        opacity:     1,
-        Sele:        'CA and helix',
-        smoothSheet: true,
-        subdiv:      6,
-        scale:       12.0,
-      }, 'proteinRibbon');
-      // CA-only cartoon: sheets
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        opacity:     1,
-        Sele:        'CA and sheet',
-        subdiv:      6,
-        scale:       10.0,
-      }, 'proteinRibbon');
-      // CA-only tube: coils — thin, deliberately smaller than cartoon
-      addRep('tube', {
-        color:       'element',
-        colorScheme: elemCol,
-        opacity:     1,
-        Sele:        'CA and coil',
-        radius:      0.12,
-        subdiv:      4,
-      }, 'proteinRibbon');
-      // Ball+stick: small-molecule ligands only (no waters, no ions)
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.3,
-        multipleBond:  true,
-        opacity:       1,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
-      // Ball+stick: protein atoms within 8A of ligand (sidechains + CA)
-      if (nearProt) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.18,
-          multipleBond:  true,
-          opacity:        1,
-          Sele:         nearProt,
-        }, 'proteinAtoms');
-      }
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA and helix', smoothSheet: true, subdiv: 6, scale: 12.0 }, 'proteinRibbon');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA and sheet', smoothSheet: true, subdiv: 6, scale: 10.0 }, 'proteinRibbon');
+      addRep('tube', { color: 'element', colorScheme: elemCol, Sele: 'CA and coil', radius: 0.12, subdiv: 4 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Cartoon ─────────────────────────────────────────────────────────── */
     case 'cartoon': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        opacity:      1,
-        Sele:        'CA and helix',
-        smoothSheet: true,
-        subdiv:       6,
-        scale:        5.0,
-      }, 'proteinRibbon');
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        opacity:      1,
-        Sele:        'CA and sheet',
-        subdiv:       6,
-        scale:        4.0,
-      }, 'proteinRibbon');
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        opacity:      1,
-        Sele:        'CA and coil',
-        scale:        3.0,
-      }, 'proteinRibbon');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.3,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
-      if (nearProt) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.18,
-          multipleBond:  true,
-          Sele:         nearProt,
-        }, 'proteinAtoms');
-      }
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA and helix', smoothSheet: true, subdiv: 6, scale: 5.0 }, 'proteinRibbon');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA and sheet', smoothSheet: true, subdiv: 6, scale: 4.0 }, 'proteinRibbon');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA and coil', scale: 3.0 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Ribbon ──────────────────────────────────────────────────────────── */
     case 'ribbon': {
-      addRep('ribbon', {
-        color:       'element',
-        colorScheme: elemCol,
-        opacity:      1,
-        Sele:        'CA',
-        smoothSheet: true,
-        subdiv:       8,
-        scale:        9.0,
-      }, 'proteinRibbon');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.3,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
-      if (nearProt) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.18,
-          multipleBond:  true,
-          Sele:         nearProt,
-        }, 'proteinAtoms');
-      }
+      addRep('ribbon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, subdiv: 8, scale: 9.0 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Surface ────────────────────────────────────────────────────────── */
     case 'surface': {
-      addRep('surface', {
-        color:            '#d4c5a9',
-        opacity:          0.82,
-        surfaceType:       'av',
-        surfaceSelection:  'protein',
-        contour:           false,
-      }, 'proteinRibbon');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.25,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
-      if (nearProt) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.18,
-          multipleBond:  true,
-          Sele:         nearProt,
-        }, 'proteinAtoms');
-      }
+      addRep('surface', { color: '#d4c5a9', opacity: 0.82, surfaceType: 'av', surfaceSelection: 'protein', contour: false }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.25, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── CPK ────────────────────────────────────────────────────────────── */
     case 'cpk': {
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.25,
-        multipleBond:  true,
-        opacity:       1,
-        Sele:         'not protein',
-      }, 'ligandAtoms');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.25, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
       break;
     }
 
     /* ── Backbone ───────────────────────────────────────────────────────── */
     case 'backbone': {
-      addRep('backbone', {
-        color:        'element',
-        colorScheme:  elemCol,
-        opacity:       1,
-        radius:       0.3,
-      }, 'proteinRibbon');
+      addRep('backbone', { color: 'element', colorScheme: elemCol, Sele: 'CA', radius: 0.3 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.25, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
-    /* ══════════════════════════════════════════════════════════════════════ */
-    /*  Standard Topology & Structure (new presets)                         */
-    /* ══════════════════════════════════════════════════════════════════════ */
-
     /* ── Rainbow ────────────────────────────────────────────────────────── */
     case 'rainbow': {
-      addRep('cartoon', {
-        color:       'residueindex',
-        Sele:        'protein',
-        smoothSheet: true,
-        subdiv:      6,
-        scale:       4.0,
-      }, 'proteinRibbon');
-      if (nearLigand) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.3,
-          multipleBond:  true,
-          Sele:         ligandOnly,
-        }, 'ligandAtoms');
-      }
+      addRep('cartoon', { color: 'residueindex', Sele: 'CA', smoothSheet: true, subdiv: 6, scale: 4.0 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Chain Surface ──────────────────────────────────────────────────── */
     case 'chain-surface': {
-      addRep('surface', {
-        color:            'chainindex',
-        opacity:          0.8,
-        surfaceType:       'av',
-        surfaceSelection:  'protein',
-      }, 'proteinRibbon');
-      if (nearLigand) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.25,
-          multipleBond:  true,
-          Sele:         ligandOnly,
-        }, 'ligandAtoms');
-      }
+      addRep('surface', { color: 'chainindex', opacity: 0.8, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.25, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Secondary Structure ────────────────────────────────────────────── */
     case 'secondary-structure': {
-      addRep('cartoon', {
-        color:       'secstruct',
-        Sele:        'protein',
-        smoothSheet: true,
-        scale:       5.0,
-      }, 'proteinRibbon');
-      if (nearLigand) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.3,
-          multipleBond:  true,
-          Sele:         ligandOnly,
-        }, 'ligandAtoms');
-      }
+      addRep('cartoon', { color: 'secstruct', Sele: 'CA', smoothSheet: true, scale: 5.0 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── B-Factor Putty ──────────────────────────────────────────────────── */
     case 'bfactor-putty': {
-      addRep('cartoon', {
-        color:       'bfactor',
-        Sele:        'protein',
-        smoothSheet: true,
-        scale:       4.0,
-      }, 'proteinRibbon');
-      if (nearLigand) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.3,
-          multipleBond:  true,
-          Sele:         ligandOnly,
-        }, 'ligandAtoms');
-      }
+      addRep('tube', { color: 'bfactor', Sele: 'CA', radius: 0.6, subdiv: 8 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Standard CPK Licorice ──────────────────────────────────────────── */
     case 'standard-cpk-licorice': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-        smoothSheet: true,
-        subdiv:      5,
-        scale:       4.0,
-      }, 'proteinRibbon');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.3,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
-      if (nearProt) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.2,
-          multipleBond:  true,
-          Sele:         nearProt,
-        }, 'proteinAtoms');
-      }
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 4.0 }, 'proteinRibbon');
+      addRep('licorice', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.2 }, 'ligandAtoms');
+      if (nearProt) addRep('licorice', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.15 }, 'proteinAtoms');
       break;
     }
 
     /* ── Backbone Trace ──────────────────────────────────────────────────── */
     case 'backbone-trace': {
-      addRep('backbone', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'CA',
-        radius:      0.3,
-      }, 'proteinRibbon');
+      addRep('backbone', { color: 'element', colorScheme: elemCol, Sele: 'CA', radius: 0.3 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.25, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── VDW Spacefill ──────────────────────────────────────────────────── */
     case 'vdw-spacefill': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-        smoothSheet: true,
-        subdiv:      5,
-        scale:       4.0,
-      }, 'proteinRibbon');
-      addRep('spacefill', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        ligandOnly,
-        radius:      1.0,
-      }, 'ligandAtoms');
-      if (nearProt) {
-        addRep('spacefill', {
-          color:       'element',
-          colorScheme: elemCol,
-          Sele:        nearProt,
-          radius:      1.0,
-        }, 'proteinAtoms');
-      }
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 4.0 }, 'proteinRibbon');
+      addRep('spacefill', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 1.0 }, 'ligandAtoms');
+      if (nearProt) addRep('spacefill', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 1.0 }, 'proteinAtoms');
       break;
     }
 
     /* ── Nucleic Acid Ladder ────────────────────────────────────────────── */
     case 'nucleic-acid-ladder': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'nucleic',
-        scale:       5.0,
-      }, 'proteinRibbon');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'nucleic', scale: 5.0 }, 'proteinRibbon');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'protein', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Hydrophobicity Surface ─────────────────────────────────────────── */
     case 'hydrophobicity-surface': {
-      addRep('surface', {
-        color:            '#d4a017',
-        opacity:          0.85,
-        surfaceType:       'av',
-        surfaceSelection:  'protein',
-      }, 'proteinRibbon');
+      addRep('surface', { color: '#d4a017', opacity: 0.85, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Ribbon & Stick ─────────────────────────────────────────────────── */
     case 'ribbon-stick': {
-      addRep('ribbon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-        smoothSheet: true,
-        scale:       7.0,
-      }, 'proteinRibbon');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.3,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
-      if (nearProt) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.18,
-          multipleBond:  true,
-          Sele:         nearProt,
-        }, 'proteinAtoms');
-      }
+      addRep('ribbon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 7.0 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
@@ -552,197 +305,87 @@ async function applyPreset(
 
     /* ── Ligand Emphasis ────────────────────────────────────────────────── */
     case 'ligand-emphasis': {
-      addRep('surface', {
-        color:            '#ffffff',
-        opacity:          0.2,
-        surfaceType:       'av',
-        surfaceSelection:  'protein',
-      }, 'proteinRibbon');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.4,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
+      addRep('surface', { color: '#ffffff', opacity: 0.2, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.4, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.25, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Pocket Surface ──────────────────────────────────────────────────── */
     case 'pocket-surface': {
       if (nearProt) {
-        addRep('surface', {
-          color:       'element',
-          colorScheme: elemCol,
-          surfaceType: 'av',
-          Sele:        nearProt,
-        }, 'proteinRibbon');
+        addRep('surface', { color: 'element', colorScheme: elemCol, surfaceType: 'av', Sele: nearProt }, 'proteinRibbon');
+      }
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (!nearProt) {
+        addRep('surface', { color: '#e0d5c0', opacity: 0.6, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
       }
       break;
     }
 
     /* ── Pharmacophore Map ──────────────────────────────────────────────── */
     case 'pharmacophore-map': {
-      addRep('licorice', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        ligandOnly,
-      }, 'ligandAtoms');
-      addRep('spacefill', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        ligandOnly,
-        radius:      0.1,
-      }, 'ligandAtoms');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      addRep('licorice', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.2 }, 'ligandAtoms');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.4, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Polar Contacts ─────────────────────────────────────────────────── */
     case 'polar-contacts': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-        smoothSheet: true,
-        subdiv:      5,
-        scale:       3.0,
-      }, 'proteinRibbon');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.25,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
-      if (nearProt) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.18,
-          multipleBond:  true,
-          Sele:         nearProt,
-        }, 'proteinAtoms');
-      }
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Halogen Bonds ──────────────────────────────────────────────────── */
     case 'halogen-bonds': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-        smoothSheet: true,
-        subdiv:      5,
-        scale:       3.0,
-      }, 'proteinRibbon');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.3,
-        multipleBond:  true,
-        Sele:         'F or CL or BR or I',
-      }, 'proteinAtoms');
-      if (nearLigand) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.18,
-          multipleBond:  true,
-          Sele:         ligandOnly,
-        }, 'ligandAtoms');
-      }
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: `((F or CL or BR or I) and (${nearProt}))`, radius: 0.3, multipleBond: true }, 'proteinAtoms');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
       break;
     }
 
     /* ── Pi-Pi Stacking ──────────────────────────────────────────────────── */
     case 'pi-pi-stacking': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-        scale:       2.0,
-      }, 'proteinRibbon');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.3,
-        multipleBond:  true,
-        Sele:         `ARO${nearProt ? ` and (${nearProt})` : ''}`,
-      }, 'proteinAtoms');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.25,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: `((PHE or TYR or TRP or HIS) and (${nearProt}))`, radius: 0.3, multipleBond: true }, 'proteinAtoms');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.25, multipleBond: true }, 'ligandAtoms');
       break;
     }
 
     /* ── Steric Clash Map ────────────────────────────────────────────────── */
     case 'steric-clash-map': {
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.5,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
-      if (nearProt) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.5,
-          multipleBond:  true,
-          Sele:         nearProt,
-        }, 'proteinAtoms');
-      }
-      addRep('contact', {
-        color:       '#ff4444',
-        Sele:        ligandOnly,
-        radius:      0.5,
-      }, 'proteinAtoms');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.5, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.5, multipleBond: true }, 'proteinAtoms');
+      addRep('contact', { color: '#ff4444', Sele: ligandOnly, radius: 0.5 }, 'proteinAtoms');
       break;
     }
 
     /* ── Receptor Cavity Mesh ────────────────────────────────────────────── */
     case 'receptor-cavity-mesh': {
-      addRep('surface', {
-        color:            '#cccccc',
-        opacity:          0.15,
-        surfaceType:       'ms',
-        surfaceSelection:  'protein',
-      }, 'proteinRibbon');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.25,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
+      addRep('surface', { color: '#cccccc', opacity: 0.15, surfaceType: 'ms', surfaceSelection: 'protein' }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.25, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Solvent-Excluded Ligand ────────────────────────────────────────── */
     case 'solvent-excluded-ligand': {
-      addRep('dot', {
-        color:  '#ffffff',
-        Sele:   ligandOnly,
-        dotSize: 0.5,
-      }, 'ligandAtoms');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      addRep('dot', { color: '#ffffff', Sele: ligandOnly, dotSize: 0.5 }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Docking Score Gradient ──────────────────────────────────────────── */
     case 'docking-score-gradient': {
-      addRep('ball+stick', {
-        color:        'bfactor',
-        colorScheme:  elemCol,
-        radius:        0.3,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'bfactor', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'bfactor', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
@@ -752,187 +395,81 @@ async function applyPreset(
 
     /* ── Electrostatic (Coulombic) ──────────────────────────────────────── */
     case 'electrostatic-coulombic': {
-      addRep('surface', {
-        color:            'electrostatic',
-        opacity:          0.8,
-        surfaceType:       'av',
-        surfaceSelection:  'protein',
-      }, 'proteinRibbon');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.3,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
-      if (nearProt) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.18,
-          multipleBond:  true,
-          Sele:         nearProt,
-        }, 'proteinAtoms');
-      }
+      addRep('surface', { color: 'electrostatic', opacity: 0.8, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Poisson-Boltzmann Surface ───────────────────────────────────────── */
     case 'poisson-boltzmann': {
-      addRep('surface', {
-        color:            'electrostatic',
-        opacity:          0.75,
-        surfaceType:       'ms',
-        surfaceSelection:  'protein',
-      }, 'proteinRibbon');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.3,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
-      if (nearProt) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.18,
-          multipleBond:  true,
-          Sele:         nearProt,
-        }, 'proteinAtoms');
-      }
+      addRep('surface', { color: 'electrostatic', opacity: 0.75, surfaceType: 'ms', surfaceSelection: 'protein' }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Molecular Lipophilicity Potential ──────────────────────────────── */
     case 'mlp': {
-      addRep('surface', {
-        color:            '#c9a84c',
-        opacity:          0.7,
-        surfaceType:       'av',
-        surfaceSelection:  'protein',
-      }, 'proteinRibbon');
+      addRep('surface', { color: '#c9a84c', opacity: 0.7, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Evolutionary Conservation ───────────────────────────────────────── */
     case 'conservation-consurf': {
-      addRep('cartoon', {
-        color:       'occupancy',
-        Sele:        'protein',
-        scale:       4.0,
-      }, 'proteinRibbon');
-      if (nearLigand) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.3,
-          multipleBond:  true,
-          Sele:         ligandOnly,
-        }, 'ligandAtoms');
-      }
+      addRep('cartoon', { color: 'occupancy', Sele: 'CA', smoothSheet: true, scale: 4.0 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Partial Charge Map ──────────────────────────────────────────────── */
     case 'partial-charge-map': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-        smoothSheet: true,
-        subdiv:      5,
-        scale:       3.0,
-      }, 'proteinRibbon');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.2,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
-      if (nearProt) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.18,
-          multipleBond:  true,
-          Sele:         nearProt,
-        }, 'proteinAtoms');
-      }
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.2, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Aromaticity Highlight ──────────────────────────────────────────── */
     case 'aromaticity-highlight': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-        smoothSheet: true,
-        subdiv:      5,
-        scale:       3.0,
-      }, 'proteinRibbon');
-      if (nearProt) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.3,
-          multipleBond:  true,
-          Sele:         `(ARO and (${nearProt}))`,
-        }, 'proteinAtoms');
-      }
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.25,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: `((PHE or TYR or TRP or HIS) and (${nearProt}))`, radius: 0.3, multipleBond: true }, 'proteinAtoms');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.25, multipleBond: true }, 'ligandAtoms');
       break;
     }
 
     /* ── pKa Shift Surface ───────────────────────────────────────────────── */
     case 'pka-shift-surface': {
-      addRep('surface', {
-        color:            '#c9a84c',
-        opacity:          0.7,
-        surfaceType:       'av',
-        surfaceSelection:  'protein',
-      }, 'proteinRibbon');
+      addRep('surface', { color: '#c9a84c', opacity: 0.7, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Dipole Moment Vector ────────────────────────────────────────────── */
     case 'dipole-moment-vector': {
-      addRep('backbone', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'CA',
-        radius:      0.3,
-      }, 'proteinRibbon');
+      addRep('backbone', { color: 'element', colorScheme: elemCol, Sele: 'CA', radius: 0.3 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.25, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Solvation Free Energy ───────────────────────────────────────────── */
     case 'solvation-free-energy': {
-      addRep('surface', {
-        color:            '#5b7db1',
-        opacity:          0.7,
-        surfaceType:       'sas',
-        surfaceSelection:  'protein',
-      }, 'proteinRibbon');
+      addRep('surface', { color: '#5b7db1', opacity: 0.7, surfaceType: 'sas', surfaceSelection: 'protein' }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Isoelectric Surface Point ───────────────────────────────────────── */
     case 'isoelectric-surface-point': {
-      addRep('surface', {
-        color:            '#8b5cf6',
-        opacity:          0.7,
-        surfaceType:       'av',
-        surfaceSelection:  'protein',
-      }, 'proteinRibbon');
+      addRep('surface', { color: '#8b5cf6', opacity: 0.7, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
@@ -942,150 +479,84 @@ async function applyPreset(
 
     /* ── RMSF Putty ──────────────────────────────────────────────────────── */
     case 'rmsf-putty': {
-      addRep('tube', {
-        color:  'bfactor',
-        Sele:   'CA',
-        radius: 0.5,
-      }, 'proteinRibbon');
+      addRep('tube', { color: 'bfactor', Sele: 'CA', radius: 0.5, subdiv: 8 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── PCA Porcupine ───────────────────────────────────────────────────── */
     case 'pca-porcupine': {
-      addRep('backbone', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'CA',
-        radius:      0.3,
-      }, 'proteinRibbon');
+      addRep('backbone', { color: 'element', colorScheme: elemCol, Sele: 'CA', radius: 0.3 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.25, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Trajectory Density Grid ─────────────────────────────────────────── */
     case 'trajectory-density-grid': {
-      addRep('surface', {
-        color:            '#66c2a5',
-        opacity:          0.3,
-        surfaceType:       'av',
-        surfaceSelection:  'protein',
-      }, 'proteinRibbon');
+      addRep('surface', { color: '#66c2a5', opacity: 0.3, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Hydration Site Iso-surface ──────────────────────────────────────── */
     case 'hydration-site-iso': {
-      addRep('surface', {
-        color:            '#80b1d3',
-        opacity:          0.3,
-        surfaceType:       'av',
-        surfaceSelection:  'HOH',
-      }, 'ligandRibbon');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      addRep('surface', { color: '#80b1d3', opacity: 0.3, surfaceType: 'av', surfaceSelection: 'HOH' }, 'ligandRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Dynamic Cross-Correlation Map ──────────────────────────────────── */
     case 'dccm': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-        smoothSheet: true,
-        subdiv:      5,
-        scale:       3.0,
-      }, 'proteinRibbon');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.15,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
-      if (nearProt) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.12,
-          multipleBond:  true,
-          Sele:         nearProt,
-        }, 'proteinAtoms');
-      }
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.15, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.12, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Lipid Bilayer ──────────────────────────────────────────────────── */
     case 'lipid-bilayer': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-      }, 'proteinRibbon');
-      addRep('line', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'not (protein or HOH)',
-      }, 'ligandAtoms');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 4.0 }, 'proteinRibbon');
+      addRep('line', { color: 'element', colorScheme: elemCol, Sele: 'not (protein or HOH)' }, 'ligandAtoms');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Ion Permeation Track ────────────────────────────────────────────── */
     case 'ion-permeation-track': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-        scale:       4.0,
-      }, 'proteinRibbon');
-      addRep('spacefill', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'NA or K or CL or CA or MG',
-        radius:      0.5,
-      }, 'ligandAtoms');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 4.0 }, 'proteinRibbon');
+      if (nearProt) addRep('spacefill', { color: 'element', colorScheme: elemCol, Sele: `((NA or K or CL or CA or MG) and (${nearProt}))`, radius: 0.5 }, 'ligandAtoms');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Trajectory Ribbon Overlay ───────────────────────────────────────── */
     case 'trajectory-ribbon-overlay': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-        scale:       3.0,
-      }, 'proteinRibbon');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Salt Bridge Network ─────────────────────────────────────────────── */
     case 'salt-bridge-network': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-        smoothSheet: true,
-        subdiv:      5,
-        scale:       3.0,
-      }, 'proteinRibbon');
-      if (nearProt) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.3,
-          multipleBond:  true,
-          Sele:         `((ASP or GLU or LYS or ARG or HIS) and (${nearProt}))`,
-        }, 'proteinAtoms');
-      }
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: `((ASP or GLU or LYS or ARG or HIS) and (${nearProt}))`, radius: 0.3, multipleBond: true }, 'proteinAtoms');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
       break;
     }
 
     /* ── Unfolding Pathway ───────────────────────────────────────────────── */
     case 'unfolding-pathway': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-        scale:       2.0,
-        opacity:     0.5,
-      }, 'proteinRibbon');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 2.0, opacity: 0.5 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
@@ -1095,165 +566,87 @@ async function applyPreset(
 
     /* ── Cryo-EM Density Fit ────────────────────────────────────────────── */
     case 'cryoem-density': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-        scale:       3.0,
-      }, 'proteinRibbon');
-      addRep('surface', {
-        color:            '#e0e0e0',
-        opacity:          0.15,
-        surfaceType:       'av',
-        surfaceSelection:  'protein',
-      }, 'proteinRibbon');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      addRep('surface', { color: '#e0e0e0', opacity: 0.15, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── X-ray Diffraction (2Fo-Fc) ─────────────────────────────────────── */
     case 'xray-2fofc': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-      }, 'proteinRibbon');
-      addRep('surface', {
-        color:            '#4a90d9',
-        opacity:          0.12,
-        surfaceType:       'av',
-        surfaceSelection:  'protein',
-      }, 'proteinRibbon');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      addRep('surface', { color: '#4a90d9', opacity: 0.12, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Difference Map (Fo-Fc) ──────────────────────────────────────────── */
     case 'difference-map-fofc': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-        smoothSheet: true,
-        subdiv:      5,
-        scale:       3.0,
-      }, 'proteinRibbon');
-      addRep('surface', {
-        color:            '#ff6b6b',
-        opacity:          0.15,
-        surfaceType:       'av',
-        surfaceSelection:  'protein',
-      }, 'proteinRibbon');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.3,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      addRep('surface', { color: '#ff6b6b', opacity: 0.15, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Ambient Occlusion Surface ───────────────────────────────────────── */
     case 'ambient-occlusion': {
-      addRep('surface', {
-        color:            '#c4b998',
-        opacity:          0.85,
-        surfaceType:       'av',
-        surfaceSelection:  'protein',
-      }, 'proteinRibbon');
+      addRep('surface', { color: '#c4b998', opacity: 0.85, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Depth-Cued Fog ──────────────────────────────────────────────────── */
     case 'depth-cued-fog': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-        scale:       3.0,
-      }, 'proteinRibbon');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Non-Covalent Interactions ───────────────────────────────────────── */
     case 'nci': {
-      addRep('surface', {
-        color:            '#e5c494',
-        opacity:          0.7,
-        surfaceType:       'av',
-        surfaceSelection:  'protein',
-      }, 'proteinRibbon');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.3,
-        multipleBond:  true,
-        Sele:         ligandOnly,
-      }, 'ligandAtoms');
+      addRep('surface', { color: '#e5c494', opacity: 0.7, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── SASA Dot Map ──────────────────────────────────────────────────── */
     case 'sasa-dot-map': {
-      addRep('dot', {
-        color:   '#8da0cb',
-        Sele:    'protein',
-        dotSize: 0.4,
-      }, 'proteinRibbon');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      addRep('dot', { color: '#8da0cb', Sele: 'protein', dotSize: 0.4 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── AlphaFold Confidence (pLDDT) ────────────────────────────────────── */
     case 'alphafold-plddt': {
-      addRep('cartoon', {
-        color:       'bfactor',
-        Sele:        'protein',
-        scale:       4.0,
-      }, 'proteinRibbon');
-      if (nearLigand) {
-        addRep('ball+stick', {
-          color:        'element',
-          colorScheme:  elemCol,
-          radius:        0.3,
-          multipleBond:  true,
-          Sele:         ligandOnly,
-        }, 'ligandAtoms');
-      }
+      addRep('cartoon', { color: 'bfactor', Sele: 'CA', smoothSheet: true, scale: 4.0 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Disulfide Bridges ──────────────────────────────────────────────── */
     case 'disulfide-bridges': {
-      addRep('backbone', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'CA',
-        radius:      0.3,
-      }, 'proteinRibbon');
-      addRep('ball+stick', {
-        color:        'element',
-        colorScheme:  elemCol,
-        radius:        0.4,
-        multipleBond:  true,
-        Sele:         'SG',
-      }, 'ligandAtoms');
+      addRep('backbone', { color: 'element', colorScheme: elemCol, Sele: 'CA', radius: 0.3 }, 'proteinRibbon');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: 'SG', radius: 0.4, multipleBond: true }, 'proteinAtoms');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
 
     /* ── Ramachandran Outliers ───────────────────────────────────────────── */
     case 'ramachandran-outliers': {
-      addRep('cartoon', {
-        color:       'element',
-        colorScheme: elemCol,
-        Sele:        'protein',
-        smoothSheet: true,
-        subdiv:      5,
-        scale:       3.0,
-      }, 'proteinRibbon');
-      addRep('spacefill', {
-        color:  '#ff0000',
-        Sele:   'CA',
-        radius: 0.6,
-      }, 'proteinAtoms');
+      addRep('cartoon', { color: 'element', colorScheme: elemCol, Sele: 'CA', smoothSheet: true, scale: 3.0 }, 'proteinRibbon');
+      addRep('spacefill', { color: '#ff0000', Sele: 'CA', radius: 0.6 }, 'proteinAtoms');
+      addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: ligandOnly, radius: 0.3, multipleBond: true }, 'ligandAtoms');
+      if (nearProt) addRep('ball+stick', { color: 'element', colorScheme: elemCol, Sele: nearProt, radius: 0.18, multipleBond: true }, 'proteinAtoms');
       break;
     }
   }
@@ -1291,10 +684,7 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
    */
   const ligandAtomsSel = useRef<string>('');
 
-  /**
-   * Store to track representations per category for visibility toggling.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  /* ── Repr store for visibility toggles ──────────────────────────────────── */
   const reprStoreRef = useRef<Record<string, any[]>>({
     proteinRibbon: [],
     proteinAtoms: [],
@@ -1322,7 +712,6 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
         try {
           const comp = await stage.loadFile('rcsb://1crn', { defaultRepresentation: false });
           if (comp) {
-            // 1crn is a pure protein — no near-ligand atoms
             ligandAtomsSel.current = '';
             await applyPreset(comp, 'dynacule', stage, '', reprStoreRef.current);
             comp.setName('default-sample');
@@ -1372,7 +761,6 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
       if (comp) {
         comp.setName('loaded-molecule');
 
-        // 'not protein' captures ligands, waters, ions, metals, cofactors, etc.
         ligandAtomsSel.current = 'not protein';
 
         await applyPreset(comp, viewPreset, stage, ligandAtomsSel.current, reprStoreRef.current);
@@ -1449,14 +837,9 @@ export default function MolecularViewer({ className, projectId }: MolecularViewe
 
       c.eachRepresentation((repr: any) => {
         try {
-          // Only recolor element-colored reps — skip special-color reps
-          const t = (repr.type || '').toLowerCase();
-          const isBackbone = ['cartoon', 'ribbon', 'tube', 'backbone'].includes(t);
-
           if (nglColor === 'element') {
             repr.setParameters({ color: 'element', colorScheme: elementColorScheme() });
           } else {
-            // For non-element schemes, no custom colorScheme needed
             repr.setParameters({ color: nglColor });
           }
         } catch {
