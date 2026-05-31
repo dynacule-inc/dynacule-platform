@@ -46,7 +46,7 @@ export default function MoleculeDetailPanel() {
 
   return (
     <div className="fixed bottom-8 right-2 z-30 w-[320px]">
-      <div className="bg-cream/95 backdrop-blur-sm border border-gold/30 rounded-lg shadow-xl overflow-hidden font-mono">
+      <div className="bg-cream/95 backdrop-blur-md border border-gold/30 rounded-lg shadow-xl overflow-hidden font-mono">
 
         {/* Header with close button */}
         <div className="flex items-center justify-between px-3 py-2 border-b border-gold/20">

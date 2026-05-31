@@ -204,61 +204,61 @@ export default function CommandPalette() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-navy/40 flex items-start justify-center pt-24" onClick={close}>
-      <div className="w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+      <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-sm flex items-start justify-center pt-24" onClick={close}>
+        <div className="w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
 
-        {/* ── SMILES Input Form ───────────────────────────────────── */}
-        {(view.stage === 'smiles-input') && (
-          <div className="bg-cream border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
-            {renderSmilesForm('create')}
-          </div>
-        )}
+          {/* ── SMILES Input Form ───────────────────────────────────── */}
+          {(view.stage === 'smiles-input') && (
+            <div className="bg-cream/95 backdrop-blur-md border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
+              {renderSmilesForm('create')}
+            </div>
+          )}
 
-        {/* ── Descriptors Input Form ───────────────────────────────── */}
-        {(view.stage === 'descriptors-input') && (
-          <div className="bg-cream border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
-            {renderSmilesForm('descriptors')}
-          </div>
-        )}
+          {/* ── Descriptors Input Form ───────────────────────────────── */}
+          {(view.stage === 'descriptors-input') && (
+            <div className="bg-cream/95 backdrop-blur-md border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
+              {renderSmilesForm('descriptors')}
+            </div>
+          )}
 
-        {/* ── Conformers Input Form ─────────────────────────────────- */}
-        {(view.stage === 'conformers-input') && (
-          <div className="bg-cream border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
-            {renderSmilesForm('conformers')}
-          </div>
-        )}
+          {/* ── Conformers Input Form ────────────────────────────────── */}
+          {(view.stage === 'conformers-input') && (
+            <div className="bg-cream/95 backdrop-blur-md border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
+              {renderSmilesForm('conformers')}
+            </div>
+          )}
 
-        {/* ── Result View ───────────────────────────────────────────- */}
-        {(view.stage === 'result') && (
-          <div className="bg-cream border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
-            {renderResult()}
-          </div>
-        )}
+          {/* ── Result View ───────────────────────────────────────────- */}
+          {(view.stage === 'result') && (
+            <div className="bg-cream/95 backdrop-blur-md border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
+              {renderResult()}
+            </div>
+          )}
 
         {/* ── Docking Form ──────────────────────────────────────────- */}
         {(view.stage === 'docking-form') && (
-          <div className="bg-cream border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
+          <div className="bg-cream/95 backdrop-blur-md border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
             <DockingForm onClose={reset} onResult={(data) => showResult('Docking Job Created', data)} onError={showError} />
           </div>
         )}
 
         {/* ── MD Form ──────────────────────────────────────────────── */}
         {(view.stage === 'md-form') && (
-          <div className="bg-cream border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
+          <div className="bg-cream/95 backdrop-blur-md border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
             <MDForm onClose={reset} onResult={(data) => showResult('MD Job Created', data)} onError={showError} />
           </div>
         )}
 
         {/* ── QM Form ──────────────────────────────────────────────── */}
         {(view.stage === 'qm-form') && (
-          <div className="bg-cream border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
+          <div className="bg-cream/95 backdrop-blur-md border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
             <QMForm onClose={reset} onResult={(data) => showResult('QM Job Created', data)} onError={showError} />
           </div>
         )}
 
         {/* ── Main Menu ─────────────────────────────────────────────── */}
         {view.stage === 'main' && (
-          <div className="bg-cream border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
+          <div className="bg-cream/95 backdrop-blur-md border border-gold/30 rounded-lg shadow-2xl overflow-hidden">
             <Command label="Dynacule Command Palette">
               <Command.Input
                 placeholder="Search pipelines..."
