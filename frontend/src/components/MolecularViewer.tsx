@@ -174,6 +174,10 @@ async function applyPreset(
     if (ATOM_REP_TYPES.has(type) && params.sele) {
       params = { ...params, sele: `(${params.sele}) and ${SEL_NO_NONPOLARH}` };
     }
+    // Inject roughness for shinier materials — all rep types respect this property
+    if (params.roughness === undefined) {
+      params = { ...params, roughness: 0.15 };
+    }
     const repr = component.addRepresentation(type, params);
     if (repr && reprStore) reprStore[category].push(repr);
     return repr;
@@ -659,7 +663,7 @@ async function applyPreset(
 
   /* Oil Paint — rich warmth, gold/cream/sepia palette, bold forms */
   case 'oil-paint': {
-    addRep('surface', { color: '#a0522d', opacity: 0.65, surfaceType: 'av', surfaceSelection: 'protein', roughness: 1.0 }, 'proteinRibbon');
+    addRep('surface', { color: '#a0522d', opacity: 0.65, surfaceType: 'av', surfaceSelection: 'protein' }, 'proteinRibbon');
     addRep('cartoon', { color: '#c9a84c', sele: SEL_HELIX, smoothSheet: true, subdiv: 6, scale: 14.0 }, 'proteinRibbon');
     addRep('cartoon', { color: '#d4a574', sele: SEL_SHEET, smoothSheet: true, subdiv: 6, scale: 12.0 }, 'proteinRibbon');
     addRep('tube',   { color: '#8b7355', sele: SEL_COIL, radius: 0.08, subdiv: 4 }, 'proteinRibbon');
