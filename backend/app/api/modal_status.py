@@ -57,21 +57,10 @@ async def get_modal_status() -> Dict[str, Any]:
     try:
         import modal
         
-        # Try to lookup the deployed app
+        # Try to call health_check directly via Function.from_name
         try:
-            app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME)
-        except Exception:
-            status["status"] = "not_deployed"
-            status["message"] = (
-                f"App '{MODAL_DEPLOYED_APP_NAME}' not found. "
-                f"Deploy with: modal deploy backend/compute/app.py --name dynacule-compute"
-            )
-            return status
-
-        # Try to call health_check
-        try:
-            # Get function handle from the deployed App
-            func = getattr(app, "health_check", None)
+            # modal.Function.from_name is the canonical way to reference deployed functions
+            func = modal.Function.from_name(MODAL_DEPLOYED_APP_NAME, "health_check")
             if func is None:
                 raise RuntimeError("Function 'health_check' not found in deployed app")
             result = func.remote()

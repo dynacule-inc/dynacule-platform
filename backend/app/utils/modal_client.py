@@ -127,16 +127,11 @@ async def dispatch_cheminformatics(
     try:
         import modal
 
-        # Verify app is reachable
-        app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME)
-        if app is None:
-            raise RuntimeError(f"Modal app '{MODAL_DEPLOYED_APP_NAME}' not found")
-
-        # Get function handle from the deployed App — this is the Modal SDK's
-        # native pattern; the App object holds references to all deployed functions
-        func = getattr(app, func_name, None)
+        # Get function handle from the deployed app
+        # modal.Function.from_name is the canonical way to reference deployed functions
+        func = modal.Function.from_name(MODAL_DEPLOYED_APP_NAME, func_name)
         if func is None:
-            raise AttributeError(f"Function '{func_name}' not found on deployed app '{MODAL_DEPLOYED_APP_NAME}'")
+            raise RuntimeError(f"Function '{func_name}' not found in deployed app '{MODAL_DEPLOYED_APP_NAME}'")
 
         # Call on Modal GPU (spins up container, runs, returns result)
         result = func.remote(smiles, **kwargs)
@@ -191,11 +186,7 @@ async def dispatch_docking(
 
     try:
         import modal
-        app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME)
-        if app is None:
-            raise RuntimeError("Modal app not available")
-
-        func = getattr(app, "run_vina_docking")
+        func = modal.Function.from_name(MODAL_DEPLOYED_APP_NAME, "run_vina_docking")
         if func is None:
             raise RuntimeError("Function 'run_vina_docking' not found in deployed app")
         result = func.remote(
@@ -253,8 +244,7 @@ async def dispatch_md(
 
     try:
         import modal
-        app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME)
-        func = getattr(app, "run_openmm_simulation")
+        func = modal.Function.from_name(MODAL_DEPLOYED_APP_NAME, "run_openmm_simulation")
         if func is None:
             raise RuntimeError("Function 'run_openmm_simulation' not found in deployed app")
         result = func.remote(
@@ -306,8 +296,7 @@ async def dispatch_qm(
 
     try:
         import modal
-        app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME)
-        func = getattr(app, "run_psi4_calculation")
+        func = modal.Function.from_name(MODAL_DEPLOYED_APP_NAME, "run_psi4_calculation")
         if func is None:
             raise RuntimeError("Function 'run_psi4_calculation' not found in deployed app")
         result = func.remote(
