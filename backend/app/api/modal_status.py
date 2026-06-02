@@ -54,7 +54,7 @@ async def get_modal_status() -> Dict[str, Any]:
         
         # Try to lookup the deployed app
         try:
-            app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME, create=False)
+            app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME)
         except Exception:
             status["status"] = "not_deployed"
             status["message"] = (
