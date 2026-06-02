@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import create_engine
 from app.api import molecules, docking, md, qm, websocket, projects, jobs
+from app.api.modal_status import router as modal_router
 from app.core.config import settings
 from app.core.redis import close_redis
 from app.models.job import Base
@@ -42,7 +43,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Routers ──────────────────────────────────────────────────────────────
+# ── Routers ─────────────────────────────────────────────────────────────────
 app.include_router(projects.router, prefix="/api/v1/projects", tags=["projects"])
 app.include_router(molecules.router, prefix="/api/v1/molecules", tags=["molecules"])
 app.include_router(jobs.router, prefix="/api/v1/jobs", tags=["jobs"])
@@ -50,6 +51,7 @@ app.include_router(docking.router, prefix="/api/v1/docking", tags=["docking"])
 app.include_router(md.router, prefix="/api/v1/md", tags=["molecular dynamics"])
 app.include_router(qm.router, prefix="/api/v1/qm", tags=["quantum mechanics"])
 app.include_router(websocket.router, prefix="/ws", tags=["websocket"])
+app.include_router(modal_router, prefix="/api/v1/modal", tags=["modal"])
 
 @app.get("/health")
 async def health_check():
