@@ -64,7 +64,7 @@ async def get_modal_status() -> Dict[str, Any]:
             status["status"] = "not_deployed"
             status["message"] = (
                 f"App '{MODAL_DEPLOYED_APP_NAME}' not found. "
-                f"Deploy with: modal deploy backend/modal/app.py --name dynacule-compute"
+                f"Deploy with: modal deploy backend/compute/app.py --name dynacule-compute"
             )
             return status
 
@@ -73,7 +73,7 @@ async def get_modal_status() -> Dict[str, Any]:
             # Import from the modal app module
             import sys
             sys.path.insert(0, "/app")
-            from modal.app import health_check
+            from compute.app import health_check
             result = health_check.remote()
             status["status"] = "healthy"
             status["functions"] = result.get("functions", [])

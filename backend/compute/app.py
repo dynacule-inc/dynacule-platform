@@ -3,7 +3,7 @@ Modal.com GPU compute layer for Dynacule.
 Deploys RDKit cheminformatics, OpenMM MD, AutoDock Vina docking, and QM calculations.
 
 Usage:
-    modal deploy backend/modal/app.py --name dynacule-compute
+    modal deploy backend/compute/app.py --name dynacule-compute
 """
 
 import modal

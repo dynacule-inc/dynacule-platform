@@ -136,7 +136,7 @@ async def dispatch_cheminformatics(
         # requires importing the decorated stub to get a .remote() handle
         import importlib, sys
         sys.path.insert(0, "/app")
-        module = importlib.import_module("modal.app")
+        module = importlib.import_module("compute.app")
         func = getattr(module, func_name)
 
         # Call on Modal GPU (spins up container, runs, returns result)
@@ -198,7 +198,7 @@ async def dispatch_docking(
 
         import sys
         sys.path.insert(0, "/app")
-        from modal.app import run_vina_docking
+        from compute.app import run_vina_docking
         result = run_vina_docking.remote(
             ligand_pdbqt=ligand_pdbqt,
             receptor_pdbqt=receptor_pdbqt,
@@ -255,7 +255,7 @@ async def dispatch_md(
     try:
         import sys
         sys.path.insert(0, "/app")
-        from modal.app import run_openmm_simulation
+        from compute.app import run_openmm_simulation
         result = run_openmm_simulation.remote(
             pdb_content=pdb_content,
             forcefield=forcefield,
@@ -306,7 +306,7 @@ async def dispatch_qm(
     try:
         import sys
         sys.path.insert(0, "/app")
-        from modal.app import run_psi4_calculation
+        from compute.app import run_psi4_calculation
         result = run_psi4_calculation.remote(
             molecule_data=molecule_data,
             task=task,

@@ -2,7 +2,7 @@
 import os, sys
 sys.path.insert(0, "/app")
 
-from backend.modal.app import health_check
+from compute.app import health_check
 result = health_check.remote()
 print("RESULT:", result)
 print("Token:", bool(os.environ.get("MODAL_API_TOKEN")))
