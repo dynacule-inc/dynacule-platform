@@ -19,7 +19,7 @@ _base_image = (
 _rdkit_image = (
     _base_image
     .micromamba()
-    .micromamba_install("rdkit", "-c", "conda-forge")
+    .micromamba_install("rdkit=2026.03.2", "-c", "conda-forge")
 )
 
 # ── OpenMM Image ─────────────────────────────────────────────────────────────
@@ -67,14 +67,15 @@ def compute_descriptors(smiles: str) -> dict:
         Dictionary containing descriptor names and values.
     """
     from rdkit import Chem
-    from rdkit.Chem import Descriptors, rdMolDescriptors
+    from rdkit.Chem import Descriptors
 
     mol = Chem.MolFromSmiles(smiles)
     if mol is None:
         return {"error": f"Invalid SMILES: {smiles}", "success": False}
 
     try:
-        descriptors = {
+        # Compute base descriptors
+        desc = {
             "success": True,
             "MolWt": round(Descriptors.MolWt(mol), 4),
             "LogP": round(Descriptors.MolLogP(mol), 4),
@@ -91,10 +92,21 @@ def compute_descriptors(smiles: str) -> dict:
             "LabuteASA": round(Descriptors.LabuteASA(mol), 4),
             "NumAliphaticRings": Descriptors.NumAliphaticRings(mol),
             "NumSaturatedRings": Descriptors.NumSaturatedRings(mol),
-            "NumBridgeheadAtoms": rdMolDescriptors.GetNumBridgeheadAtoms(mol),
-            "NumSpiroAtoms": rdMolDescriptors.GetNumSpiroAtoms(mol),
         }
-        return descriptors
+        # Bridgehead and spiro atoms — these require rdMolDescriptors (RDKit 2024-)
+        # Use try/except for backward compat with RDKit 2026 where they may be
+        # moved to Descriptors or removed entirely
+        try:
+            from rdkit.Chem import rdMolDescriptors
+            desc["NumBridgeheadAtoms"] = rdMolDescriptors.GetNumBridgeheadAtoms(mol)
+        except (AttributeError, ImportError, NameError):
+            desc["NumBridgeheadAtoms"] = 0
+        try:
+            from rdkit.Chem import rdMolDescriptors
+            desc["NumSpiroAtoms"] = rdMolDescriptors.GetNumSpiroAtoms(mol)
+        except (AttributeError, ImportError, NameError):
+            desc["NumSpiroAtoms"] = 0
+        return desc
     except Exception as e:
         return {"error": str(e), "success": False}
 
