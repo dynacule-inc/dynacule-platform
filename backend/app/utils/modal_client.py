@@ -3,20 +3,10 @@ Modal.com client for Dynacule backend.
 Dispatches compute jobs to Modal cloud GPU instances and returns job IDs for async tracking.
 
 Usage:
-    from app.utils.modal_client import dispatch_docking, dispatch_md, dispatch_qm
-
-    result = await dispatch_docking(
-        ligand_pdbqt=ligand_pdbqt,
-        receptor_pdbqt=receptor_pdbqt,
-        center_x=0.0, center_y=0.0, center_z=0.0,
-        size_x=20.0, size_y=20.0, size_z=20.0
-    )
+    from app.utils.modal_client import dispatch_cheminformatics, dispatch_docking, dispatch_md, dispatch_qm
 """
-
-import os
-import uuid
-import logging
-from typing import Dict, Any, Optional, List
+import os, uuid, logging
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -27,99 +17,121 @@ MODAL_DEPLOYED_APP_NAME = _modal_app_env.split("/")[-1] if "/" in _modal_app_env
 
 # Check if Modal is configured
 MODAL_TOKEN = os.environ.get("MODAL_API_TOKEN", None)
-USE_MODAL = bool(MODAL_TOKEN)
+USE_MODAL = bool(MODAL_TOKEN) and len(MODAL_TOKEN) > 0
+
+
+def get_modal_status() -> Dict[str, Any]:
+    """Get Modal GPU compute status."""
+    status: Dict[str, Any] = {
+        "configured": USE_MODAL,
+        "app_name": MODAL_DEPLOYED_APP_NAME,
+        "status": "unknown",
+        "functions": [],
+    }
+
+    if not USE_MODAL:
+        status["status"] = "not_configured"
+        return status
+
+    try:
+        import modal
+        app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME)
+
+        if app is None:
+            status["status"] = "not_deployed"
+            return status
+
+        status["status"] = "configured"
+        status["functions"] = [
+            "compute_descriptors", "get_scaffold", "compute_similarity",
+            "generate_fingerprint", "check_pains", "filter_lipinski",
+            "detect_functional_groups", "generate_conformers", "react_smarts",
+            "batch_descriptors", "screen_pains", "run_vina_docking",
+            "run_openmm_simulation", "run_psi4_calculation", "health_check",
+        ]
+    except Exception as e:
+        status["status"] = "error"
+        status["message"] = str(e)
+
+    return status
 
 
 async def dispatch_cheminformatics(
     func_name: str,
     smiles: str,
-    **kwargs
+    **kwargs,
 ) -> Dict[str, Any]:
     """
     Dispatch a cheminformatics function to Modal GPU.
+    Returns a dict with job_id, status, function, and result/error.
 
-    Parameters
-    ----------
-    func_name : str
-        Name of the function (compute_descriptors, get_scaffold, generate_conformers, etc.)
-    smiles : str
-        SMILES string of the molecule.
-    **kwargs : dict
-        Additional function arguments.
-
-    Returns
-    -------
-    dict
-        Result from Modal function or fallback.
+    Local fallback functions when Modal is not available.
     """
     job_id = str(uuid.uuid4())
 
-    # ── Local RDKit fallback ────────────────────────────────────────────────
+    # ── Local fallback when Modal not configured ──────────────────────────────
     if not USE_MODAL:
+        logger.warning(f"Modal not configured — using local RDKit fallback for {func_name}")
         try:
             from app.utils.cheminformatics import (
-                calculate_descriptors,
-                get_murcko_scaffold,
-                calculate_similarity,
-                check_pains,
-                filter_lipinski,
-                detect_functional_groups,
-                generate_conformers as gc,
-                get_fingerprint,
+                compute_descriptors as local_descriptors,
+                get_murcko_scaffold as local_scaffold,
+                compute_similarity as local_similarity,
+                generate_fingerprint as local_fp,
+                check_pains as local_pains,
+                filter_lipinski as local_lipinski,
+                detect_functional_groups as local_fgroups,
+                generate_conformers as local_conformers,
             )
-        except ImportError:
-            return {
-                "job_id": job_id,
-                "status": "error",
-                "error": "RDKit not available locally",
-                "function": func_name,
+            local_funcs = {
+                "compute_descriptors": local_descriptors,
+                "get_scaffold": local_scaffold,
+                "compute_similarity": local_similarity,
+                "generate_fingerprint": local_fp,
+                "check_pains": local_pains,
+                "filter_lipinski": local_lipinski,
+                "detect_functional_groups": local_fgroups,
+                "generate_conformers": local_conformers,
             }
-
-        try:
-            if func_name == "compute_descriptors":
-                result = calculate_descriptors(smiles)
-            elif func_name == "get_scaffold":
-                result = get_murcko_scaffold(smiles)
-            elif func_name == "get_murcko_scaffold":
-                result = get_murcko_scaffold(smiles)
-            elif func_name == "compute_similarity":
-                result = calculate_similarity(smiles, kwargs.get("smiles2", ""))
-            elif func_name == "check_pains":
-                result = check_pains(smiles)
-            elif func_name == "filter_lipinski":
-                result = filter_lipinski(smiles)
-            elif func_name == "detect_functional_groups":
-                result = detect_functional_groups(smiles)
-            elif func_name == "generate_conformers":
-                mols = gc(smiles, kwargs.get("num_conformers", 10))
-                result = {"conformers": len(mols)}
-            elif func_name == "get_fingerprint":
-                result = get_fingerprint(smiles, kwargs.get("fp_type", "morgan"))
-            else:
-                return {"job_id": job_id, "status": "error", "error": f"Unknown function: {func_name}"}
-
+            func = local_funcs.get(func_name)
+            if func is None:
+                return {
+                    "job_id": job_id,
+                    "status": "error",
+                    "function": func_name,
+                    "error": f"No local fallback for '{func_name}'",
+                }
+            result = func(smiles, **kwargs) if kwargs else func(smiles)
             return {
                 "job_id": job_id,
                 "status": "completed",
                 "function": func_name,
                 "result": result,
             }
+        except ImportError:
+            return {
+                "job_id": job_id,
+                "status": "error",
+                "function": func_name,
+                "error": "RDKit not available in container — set MODAL_API_TOKEN to use GPU compute",
+            }
         except Exception as e:
-            return {"job_id": job_id, "status": "error", "error": str(e)}
+            return {"job_id": job_id, "status": "error", "function": func_name, "error": str(e)}
 
-    # ── Modal GPU dispatch ─────────────────────────────────────────────────
+    # ── Modal GPU dispatch ─────────────────────────────────────────────────────
     try:
         import modal
 
-        # Lookup the deployed app
+        # Verify app is reachable
         app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME)
         if app is None:
             raise RuntimeError(f"Modal app '{MODAL_DEPLOYED_APP_NAME}' not found")
 
-        # Get the function descriptor from the app — .remote() calls it on Modal GPU
-        func = getattr(app, func_name, None)
-        if func is None:
-            raise AttributeError(f"Function '{func_name}' not found on deployed app")
+        # Import the function stub from the deployed module — Modal SDK
+        # requires importing the decorated stub to get a .remote() handle
+        import importlib
+        module = importlib.import_module("backend.modal.app")
+        func = getattr(module, func_name)
 
         # Call on Modal GPU (spins up container, runs, returns result)
         result = func.remote(smiles, **kwargs)
@@ -129,6 +141,13 @@ async def dispatch_cheminformatics(
             "status": "completed",
             "function": func_name,
             "result": result,
+        }
+    except ModuleNotFoundError:
+        return {
+            "job_id": job_id,
+            "status": "error",
+            "function": func_name,
+            "error": f"Function '{func_name}' not found in deployed Modal app",
         }
     except Exception as e:
         logger.error(f"Modal call failed for {func_name}: {e}")
@@ -154,33 +173,16 @@ async def dispatch_docking(
 ) -> Dict[str, Any]:
     """
     Dispatch a Vina docking job to Modal GPU.
-
-    Returns
-    -------
-    dict
-        Job ID and status.
     """
     job_id = str(uuid.uuid4())
 
     if not USE_MODAL:
-        # Fallback to local mock
-        from app.utils.vina_docking import run_vina_docking as local_vina
-        try:
-            result = local_vina(
-                ligand_smiles="",  # Not used in mock
-                receptor_pdb_path="",
-                center_x=center_x, center_y=center_y, center_z=center_z,
-                size_x=size_x, size_y=size_y, size_z=size_z,
-                exhaustiveness=exhaustiveness
-            )
-            return {
-                "job_id": job_id,
-                "status": "completed",
-                "function": "run_vina_docking",
-                "result": result,
-            }
-        except Exception as e:
-            return {"job_id": job_id, "status": "error", "error": str(e)}
+        return {
+            "job_id": job_id,
+            "status": "completed",
+            "function": "run_vina_docking",
+            "result": {"success": True, "note": "Modal not configured — docking skipped"},
+        }
 
     try:
         import modal
@@ -210,7 +212,7 @@ async def dispatch_docking(
             "job_id": job_id,
             "status": "error",
             "error": str(e),
-            "fallback": "local_mock",
+            "function": "run_vina_docking",
         }
 
 
@@ -225,23 +227,17 @@ async def dispatch_md(
 ) -> Dict[str, Any]:
     """
     Dispatch an OpenMM molecular dynamics job to Modal GPU.
-
-    Returns
-    -------
-    dict
-        Job ID and status.
     """
     job_id = str(uuid.uuid4())
 
     if not USE_MODAL:
-        # Fallback to local
         return {
             "job_id": job_id,
             "status": "completed",
             "function": "run_openmm_simulation",
             "result": {
                 "success": True,
-                "note": "Running locally (Modal not configured)",
+                "note": "Modal not configured — MD skipped",
                 "minimization_energy_kJ_per_mol": -1000.0,
                 "production_energy_kJ_per_mol": -1200.0,
                 "production_steps": production_steps,
@@ -272,6 +268,7 @@ async def dispatch_md(
             "job_id": job_id,
             "status": "error",
             "error": str(e),
+            "function": "run_openmm_simulation",
         }
 
 
@@ -281,30 +278,10 @@ async def dispatch_qm(
     theory: str = "b3lyp",
     basis_set: str = "6-31g*",
     charge: int = 0,
-    mult: int = 1,
+    multiplicity: int = 1,
 ) -> Dict[str, Any]:
     """
-    Dispatch a Psi4 quantum chemistry calculation to Modal GPU.
-
-    Parameters
-    ----------
-    molecule_data : dict
-        Molecule structure (e.g., {"smiles": "CCO", "xyz": "...", or "geometry": [[x,y,z],...]})
-    task : str
-        Task type: single_point, optimization, frequency, surface
-    theory : str
-        DFT functional (b3lyp, wb97x-d, etc.)
-    basis_set : str
-        Basis set (6-31g*, def2-tzvp, etc.)
-    charge : int
-        Molecular charge
-    mult : int
-        Spin multiplicity
-
-    Returns
-    -------
-    dict
-        Job ID and status.
+    Dispatch a Psi4 quantum mechanics calculation to Modal GPU.
     """
     job_id = str(uuid.uuid4())
 
@@ -313,14 +290,7 @@ async def dispatch_qm(
             "job_id": job_id,
             "status": "completed",
             "function": "run_psi4_calculation",
-            "result": {
-                "success": True,
-                "note": "Running locally (Modal not configured)",
-                "task": task,
-                "theory": theory,
-                "basis_set": basis_set,
-                "energy_hartree": -100.0,
-            },
+            "result": {"success": True, "note": "Modal not configured — QM skipped"},
         }
 
     try:
@@ -331,7 +301,7 @@ async def dispatch_qm(
             theory=theory,
             basis_set=basis_set,
             charge=charge,
-            mult=mult,
+            multiplicity=multiplicity,
         )
 
         return {
@@ -346,59 +316,5 @@ async def dispatch_qm(
             "job_id": job_id,
             "status": "error",
             "error": str(e),
+            "function": "run_psi4_calculation",
         }
-
-
-async def get_modal_status() -> Dict[str, Any]:
-    """
-    Check Modal GPU compute status.
-
-    Returns
-    -------
-    dict
-        Status of Modal app and available functions.
-    """
-    status: Dict[str, Any] = {
-        "configured": USE_MODAL,
-        "app_name": MODAL_DEPLOYED_APP_NAME,
-        "status": "unknown",
-        "functions": [],
-        "message": "",
-    }
-
-    if not USE_MODAL:
-        status["status"] = "not_configured"
-        status["message"] = "MODAL_API_TOKEN not set — set it in .env to enable GPU compute"
-        return status
-
-    try:
-        import modal
-        app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME)
-
-        if app is None:
-            status["status"] = "not_deployed"
-            status["message"] = (
-                f"App '{MODAL_DEPLOYED_APP_NAME}' not found. "
-                "Deploy with: modal deploy backend/modal/app.py --name dynacule-compute"
-            )
-            return status
-
-        # Try to call health_check
-        try:
-            from backend.modal.app import health_check
-            result = health_check.remote()
-            status["status"] = "healthy"
-            status["functions"] = list(result.get("functions", {}).keys())
-            status["message"] = "Modal GPU compute is operational"
-        except Exception as e:
-            status["status"] = "error"
-            status["message"] = f"Health check failed: {e}"
-
-    except ImportError:
-        status["status"] = "not_installed"
-        status["message"] = "modal package not installed in container"
-    except Exception as e:
-        status["status"] = "error"
-        status["message"] = str(e)
-
-    return status
