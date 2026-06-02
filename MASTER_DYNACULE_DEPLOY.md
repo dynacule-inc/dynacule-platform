@@ -272,7 +272,7 @@ Here's a recommended workflow for developing and testing Dynacule locally:
    ```
 
 6. **Access Application**
-   - Frontend: http://localhost:3001 (port 3001 to avoid conflicts with other services)
+   - Frontend: http://localhost:3000
    - Backend API docs: http://localhost:8000/docs (Swagger UI)
    - Backend ReDocs: http://localhost:8000/redoc
    - Backend health: http://localhost:8000/health

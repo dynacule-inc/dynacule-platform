@@ -9,7 +9,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev
     ports:
-      - "3001:3000"
+      - "3000:3000"
     volumes:
       - ./frontend:/app
       - /app/node_modules       # container node_modules, not host
@@ -56,8 +56,6 @@ services:
   # ── Redis: message broker + WebSocket pub/sub ─────────────────────
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:

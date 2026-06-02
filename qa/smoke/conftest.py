@@ -23,7 +23,7 @@ PROJECT_DIR = Path(__file__).resolve().parent.parent.parent  # Dynacule Sprint 2
 COMPOSE_FILE = PROJECT_DIR / "docker-compose.yml"
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 WS_URL = os.getenv("WS_URL", "ws://localhost:8000")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3001")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 
 def _compose_cmd(*args: str) -> list[str]:
