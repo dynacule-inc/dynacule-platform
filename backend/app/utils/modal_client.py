@@ -21,7 +21,9 @@ from typing import Dict, Any, Optional, List
 logger = logging.getLogger(__name__)
 
 # Modal configuration
-MODAL_DEPLOYED_APP_NAME = os.environ.get("MODAL_APP_NAME", "dynacule-compute")
+_modal_app_env = os.environ.get("MODAL_APP_NAME", "dynacule-compute")
+# Strip workspace prefix if present (e.g. "shabab747/dynacule-compute" → "dynacule-compute")
+MODAL_DEPLOYED_APP_NAME = _modal_app_env.split("/")[-1] if "/" in _modal_app_env else _modal_app_env
 
 # Check if Modal is configured
 MODAL_TOKEN = os.environ.get("MODAL_API_TOKEN", None)
@@ -110,7 +112,7 @@ async def dispatch_cheminformatics(
         import modal
 
         # Lookup the deployed app
-        app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME, create=False)
+        app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME)
         if app is None:
             raise RuntimeError(f"Modal app '{MODAL_DEPLOYED_APP_NAME}' not found")
 
@@ -182,7 +184,7 @@ async def dispatch_docking(
 
     try:
         import modal
-        app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME, create=False)
+        app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME)
         if app is None:
             raise RuntimeError("Modal app not available")
 
@@ -371,7 +373,7 @@ async def get_modal_status() -> Dict[str, Any]:
 
     try:
         import modal
-        app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME, create=False)
+        app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME)
 
         if app is None:
             status["status"] = "not_deployed"

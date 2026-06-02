@@ -32,6 +32,9 @@ async def get_modal_status() -> Dict[str, Any]:
     MODAL_TOKEN = os.environ.get("MODAL_API_TOKEN") or None
     USE_MODAL = bool(MODAL_TOKEN) and len(MODAL_TOKEN) > 0
     MODAL_DEPLOYED_APP_NAME = os.environ.get("MODAL_APP_NAME", "dynacule-compute")
+    # Strip workspace prefix if present (e.g. "shabab747/dynacule-compute" → "dynacule-compute")
+    if "/" in MODAL_DEPLOYED_APP_NAME:
+        MODAL_DEPLOYED_APP_NAME = MODAL_DEPLOYED_APP_NAME.split("/")[-1]
 
     status = {
         "modal_configured": USE_MODAL,
