@@ -96,6 +96,16 @@ async def dispatch_cheminformatics(
                 result = filter_lipinski(smiles)
             elif func_name == "detect_functional_groups":
                 result = detect_functional_groups(smiles)
+            elif func_name == "generate_conformers":
+                from app.utils.cheminformatics import generate_conformers as gc
+                mols = gc(smiles, kwargs.get("num_conformers", 10))
+                result = {"conformers": len(mols)}
+            elif func_name == "get_fingerprint":
+                from app.utils.cheminformatics import get_fingerprint
+                result = get_fingerprint(smiles, kwargs.get("fp_type", "morgan"))
+            elif func_name == "get_murcko_scaffold":
+                from app.utils.cheminformatics import get_murcko_scaffold
+                result = get_murcko_scaffold(smiles)
             else:
                 return {"job_id": job_id, "status": "error", "error": f"Unknown function: {func_name}"}
 

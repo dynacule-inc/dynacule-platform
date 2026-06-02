@@ -144,19 +144,25 @@ async def list_molecules(
 async def calculate_molecular_descriptors(
     smiles: str = Query(..., description="SMILES string"),
 ):
-    """Calculate molecular descriptors (requires RDKit or Modal offload)."""
+    """Calculate molecular descriptors — routes to Modal GPU when RDKit unavailable."""
     from app.utils import cheminformatics
-    if cheminformatics is None or not getattr(cheminformatics, "RDKIT_AVAILABLE", False):
-        return {
-            "smiles": smiles,
-            "note": "RDKit not available in container — offload to Modal",
-            "descriptors": {},
-        }
-    try:
-        descriptors = cheminformatics.calculate_descriptors(smiles)
-        return {"smiles": smiles, "descriptors": descriptors}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    if getattr(cheminformatics, "RDKIT_AVAILABLE", False):
+        try:
+            descriptors = cheminformatics.calculate_descriptors(smiles)
+            return {"smiles": smiles, "descriptors": descriptors}
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+    # RDKit unavailable — offload to Modal
+    from app.utils.modal_client import dispatch_cheminformatics
+    result = await dispatch_cheminformatics("compute_descriptors", smiles)
+    if result.get("status") == "completed":
+        return {"smiles": smiles, "descriptors": result.get("result", {})}
+    return {
+        "smiles": smiles,
+        "note": "RDKit not available — offload to Modal",
+        "descriptors": {},
+    }
 
 
 @router.get("/conformers")
@@ -164,19 +170,25 @@ async def generate_molecule_conformers(
     smiles: str = Query(..., description="SMILES string"),
     num_conformers: int = Query(10, ge=1, le=100),
 ):
-    """Generate conformers (requires RDKit or Modal offload)."""
+    """Generate conformers — routes to Modal GPU when RDKit unavailable in container."""
     from app.utils import cheminformatics
-    if cheminformatics is None or not getattr(cheminformatics, "RDKIT_AVAILABLE", False):
-        return {
-            "smiles": smiles,
-            "note": "RDKit not available in container — offload to Modal",
-            "conformers": 0,
-        }
-    try:
-        mols = cheminformatics.generate_conformers(smiles, num_conformers)
-        return {"smiles": smiles, "conformers": len(mols)}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    if getattr(cheminformatics, "RDKIT_AVAILABLE", False):
+        try:
+            mols = cheminformatics.generate_conformers(smiles, num_conformers)
+            return {"smiles": smiles, "conformers": len(mols)}
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+    # RDKit unavailable — offload to Modal
+    from app.utils.modal_client import dispatch_cheminformatics
+    result = await dispatch_cheminformatics("generate_conformers", smiles, num_conformers=num_conformers)
+    if result.get("status") == "completed":
+        return {"smiles": smiles, "conformers": result.get("result", {}).get("conformers", 0)}
+    return {
+        "smiles": smiles,
+        "note": "RDKit not available — offload to Modal",
+        "conformers": 0,
+    }
 
 
 # ── Parameterized routes ──────────────────────────────────────────────────
