@@ -23,7 +23,7 @@ COPY . .
 
 # Non-root user for security
 RUN groupadd -r dynacule && useradd -r -g dynacule dynacule && \
-    chown -R dynacule:dynacule /app
+    mkdir -p /app/data && chown -R dynacule:dynacule /app
 USER dynacule
 
 EXPOSE 8000
