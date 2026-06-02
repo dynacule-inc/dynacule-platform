@@ -30,7 +30,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
-      - dynacule_db:/app
+      - dynacule_db:/app/data
     environment:
       - DATABASE_URL=sqlite:////app/dynacule.db
       - REDIS_HOST=redis
