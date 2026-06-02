@@ -2,7 +2,9 @@
  * Molecule API client — communicates with the FastAPI backend.
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+import { apiBase } from './apiBase';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || apiBase();
 
 export interface MoleculeData {
   id: number;

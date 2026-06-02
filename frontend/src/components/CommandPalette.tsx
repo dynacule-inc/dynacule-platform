@@ -5,6 +5,7 @@ import { Command } from 'cmdk';
 import { moleculeApi } from '@/lib/moleculeApi';
 import { jobApi } from '@/lib/jobApi';
 import { useStore } from '@/lib/store';
+import { apiBase } from '@/lib/apiBase';
 
 type Stage = 'main' | 'smiles-input' | 'descriptors-input' | 'conformers-input' | 'docking-form' | 'md-form' | 'qm-form' | 'result';
 
@@ -95,7 +96,7 @@ export default function CommandPalette() {
     setError(null);
     try {
       // Use the raw molecules endpoint (with graceful degradation)
-      const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/molecules/descriptors?smiles=${encodeURIComponent(s)}`;
+      const url = `${apiBase()}/molecules/descriptors?smiles=${encodeURIComponent(s)}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error(`Request failed: ${res.status}`);
       const data = await res.json();
@@ -111,7 +112,7 @@ export default function CommandPalette() {
     setLoading(true);
     setError(null);
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/molecules/conformers?smiles=${encodeURIComponent(s)}&num_conformers=10`;
+      const url = `${apiBase()}/molecules/conformers?smiles=${encodeURIComponent(s)}&num_conformers=10`;
       const res = await fetch(url);
       if (!res.ok) throw new Error(`Request failed: ${res.status}`);
       const data = await res.json();
@@ -356,7 +357,7 @@ export default function CommandPalette() {
                   <Command.Item
                     className="px-5 py-4 rounded-md cursor-pointer text-cream aria-selected:bg-gold/20 [&:hover]:bg-gold/15"
                     onSelect={() => {
-                      fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/projects/`, {
+                      fetch(`${apiBase()}/projects/`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ name: `Project ${Date.now()}`, description: 'Created from command palette' }),
@@ -402,7 +403,7 @@ function DockingForm({
     if (!smiles.trim()) return;
     setLoading(true);
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/docking/`;
+      const url = `${apiBase()}/docking/`;
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -502,7 +503,7 @@ function MDForm({
     if (!pdb.trim()) return;
     setLoading(true);
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/md/`;
+      const url = `${apiBase()}/md/`;
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -578,7 +579,7 @@ function QMForm({
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'}/qm/`;
+      const url = `${apiBase()}/qm/`;
       const res = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

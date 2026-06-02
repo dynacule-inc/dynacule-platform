@@ -8,7 +8,8 @@ export default function StatusBar() {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || `ws://${window.location.hostname}:8000/ws/status`;
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.hostname}:8000/ws/status`;
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 

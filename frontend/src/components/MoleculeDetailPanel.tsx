@@ -5,6 +5,7 @@ import { useStore } from '@/lib/store';
 import { moleculeApi } from '@/lib/moleculeApi';
 import SmilesDepict from './SmilesDepict';
 import RadarChart, { normalizeDescriptors } from './RadarChart';
+import { apiBase } from '@/lib/apiBase';
 
 interface DescriptorRes {
   descriptors: Record<string, number>;
@@ -24,11 +25,7 @@ export default function MoleculeDetailPanel() {
     }
 
     setLoading(true);
-    fetch(
-      `${
-        process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
-      }/molecules/${selectedMolecule.id}/descriptors`
-    )
+    fetch(`${apiBase()}/molecules/${selectedMolecule.id}/descriptors`)
       .then((r) => r.json())
       .then((data) => setDescriptors(data))
       .catch(() => setDescriptors(null))
