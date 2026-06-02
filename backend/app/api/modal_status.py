@@ -73,7 +73,7 @@ async def get_modal_status() -> Dict[str, Any]:
             # Import from the modal app module
             import sys
             sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/../../")
-            from backend.modal.app import health_check
+            from modal.app import health_check
             result = health_check.remote()
             status["status"] = "healthy"
             status["functions"] = result.get("functions", [])
