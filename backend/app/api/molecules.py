@@ -400,6 +400,229 @@ async def delete_molecule(molecule_id: int, db: Session = Depends(get_db)):
     return {"message": f"Molecule {molecule_id} deleted"}
 
 
-# ── RDKit-dependent endpoints (graceful degradation) ────────────────────
-# These are duplicated after the static routes section above to ensure
-# correct route ordering. These duplicates are left for clarity.
+# ── New RDKit-powered endpoints ───────────────────────────────────────────────
+
+@router.get("/scaffolds")
+async def get_scaffolds(
+    smiles: str = Query(..., description="SMILES string"),
+):
+    """Compute Murcko scaffold and Bemis-Murcko framework for a molecule."""
+    from app.utils import cheminformatics
+    if not getattr(cheminformatics, "RDKIT_AVAILABLE", False):
+        return {
+            "smiles": smiles,
+            "note": "RDKit not available — offload to Modal for scaffold analysis",
+            "murcko_smiles": None,
+            "bemis_murcko_smiles": None,
+        }
+    try:
+        result = cheminformatics.get_murcko_scaffold(smiles)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/similarity")
+async def pairwise_similarity(
+    smiles1: str = Query(..., description="First SMILES"),
+    smiles2: str = Query(..., description="Second SMILES"),
+    metric: str = Query("tanimoto", description="Metric: tanimoto, dice, tversky"),
+):
+    """Calculate pairwise similarity between two molecules."""
+    from app.utils import cheminformatics
+    if not getattr(cheminformatics, "RDKIT_AVAILABLE", False):
+        return {
+            "smiles1": smiles1,
+            "smiles2": smiles2,
+            "metric": metric,
+            "similarity": None,
+            "note": "RDKit not available",
+        }
+    try:
+        result = cheminformatics.calculate_similarity(smiles1, smiles2, metric)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/similarity-search")
+async def similarity_search(
+    smiles: str = Query(..., description="Query SMILES"),
+    limit: int = Query(10, ge=1, le=100, description="Number of results"),
+    metric: str = Query("tanimoto", description="Metric: tanimoto or dice"),
+    db: Session = Depends(get_db),
+):
+    """Search stored molecules for similar structures."""
+    from app.utils import cheminformatics
+    if not getattr(cheminformatics, "RDKIT_AVAILABLE", False):
+        return {
+            "query_smiles": smiles,
+            "results": [],
+            "note": "RDKit not available",
+        }
+    # Get all molecules with SMILES from DB
+    db_gen = db.query(Molecule.smiles).filter(Molecule.smiles.isnot(None)).all()
+    molecules_list = [m[0] for m in db_gen if m[0]]
+    if not molecules_list:
+        return {"query_smiles": smiles, "results": [], "note": "No stored molecules with SMILES"}
+    try:
+        results = cheminformatics.search_similar_molecules(
+            smiles, molecules_list, metric=metric, top_n=limit
+        )
+        return {"query_smiles": smiles, "results": results, "total_stored": len(molecules_list)}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/pains")
+async def check_pains_filter(
+    smiles: str = Query(..., description="SMILES string"),
+):
+    """Check molecule for PAINS (Pan-Assay Interference) substructure alerts."""
+    from app.utils import cheminformatics
+    if not getattr(cheminformatics, "RDKIT_AVAILABLE", False):
+        return {
+            "smiles": smiles,
+            "has_pains": None,
+            "pains_found": [],
+            "note": "RDKit not available",
+        }
+    try:
+        result = cheminformatics.check_pains(smiles)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/fingerprints")
+async def get_fingerprints(
+    smiles: str = Query(..., description="SMILES string"),
+    fp_type: str = Query("morgan", description="Type: morgan, maccs, rdkit"),
+):
+    """Compute molecular fingerprint (Morgan/ECFP4, MACCS, or RDKit) as hex string."""
+    from app.utils import cheminformatics
+    if not getattr(cheminformatics, "RDKIT_AVAILABLE", False):
+        return {
+            "smiles": smiles,
+            "fp_type": fp_type,
+            "bits": None,
+            "size": 0,
+            "note": "RDKit not available",
+        }
+    try:
+        result = cheminformatics.get_fingerprint(smiles, fp_type)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/property-histogram")
+async def property_histogram(
+    property: str = Query(..., description="Property: LogP, MolWt, TPSA, NumHDonors, NumHAcceptors, NumRotatableBonds, RingCount"),
+    project_id: Optional[int] = Query(None, description="Filter by project"),
+    num_bins: int = Query(20, ge=5, le=100, description="Number of histogram bins"),
+    db: Session = Depends(get_db),
+):
+    """Compute histogram distribution of a molecular property across stored molecules."""
+    from app.utils import cheminformatics
+    if not getattr(cheminformatics, "RDKIT_AVAILABLE", False):
+        return {
+            "property": property,
+            "bins": [],
+            "counts": [],
+            "note": "RDKit not available",
+        }
+    # Collect SMILES from DB
+    query = db.query(Molecule.smiles).filter(Molecule.smiles.isnot(None))
+    if project_id is not None:
+        query = query.filter(Molecule.project_id == project_id)
+    molecules_smiles = [m[0] for m in query.all() if m[0]]
+    try:
+        result = cheminformatics.get_property_distribution(
+            property, molecules_smiles, num_bins=num_bins
+        )
+        result["total_molecules"] = len(molecules_smiles)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/brics-fragmentation")
+async def brics_fragment(
+    smiles: str = Query(..., description="SMILES string"),
+):
+    """Fragment a molecule using BRICS (Breaking Retrosynthetically Interesting Chemical Substructures)."""
+    from app.utils import cheminformatics
+    if not getattr(cheminformatics, "RDKIT_AVAILABLE", False):
+        return {
+            "smiles": smiles,
+            "fragments": [],
+            "note": "RDKit not available — offload to Modal for fragmentation",
+        }
+    try:
+        result = cheminformatics.brics_fragmentation(smiles)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/react")
+async def apply_reaction(
+    smiles: str = Form(..., description="Reactant SMILES"),
+    reaction_smarts: str = Form(..., description="Reaction SMARTS (e.g., '[C:1]>>[C:1]O')"),
+):
+    """Apply a SMARTS reaction to a molecule and return product SMILES."""
+    from app.utils import cheminformatics
+    if not getattr(cheminformatics, "RDKIT_AVAILABLE", False):
+        return {
+            "smiles": smiles,
+            "reaction_smarts": reaction_smarts,
+            "products": [],
+            "note": "RDKit not available",
+        }
+    try:
+        result = cheminformatics.apply_reaction(smiles, reaction_smarts)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/functional-groups")
+async def functional_groups(
+    smiles: str = Query(..., description="SMILES string"),
+):
+    """Detect common functional groups in a molecule."""
+    from app.utils import cheminformatics
+    if not getattr(cheminformatics, "RDKIT_AVAILABLE", False):
+        return {
+            "smiles": smiles,
+            "groups": [],
+            "note": "RDKit not available",
+        }
+    try:
+        result = cheminformatics.detect_functional_groups(smiles)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/smarts-match")
+async def smarts_match(
+    smiles: str = Query(..., description="SMILES string"),
+    smarts: str = Query(..., description="SMARTS pattern"),
+):
+    """Check if a SMILES matches a SMARTS pattern and return atom indices."""
+    from app.utils import cheminformatics
+    if not getattr(cheminformatics, "RDKIT_AVAILABLE", False):
+        return {
+            "smiles": smiles,
+            "smarts": smarts,
+            "matched": None,
+            "matches": [],
+            "note": "RDKit not available",
+        }
+    try:
+        result = cheminformatics.match_smarts(smiles, smarts)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
