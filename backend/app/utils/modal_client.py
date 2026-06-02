@@ -132,12 +132,11 @@ async def dispatch_cheminformatics(
         if app is None:
             raise RuntimeError(f"Modal app '{MODAL_DEPLOYED_APP_NAME}' not found")
 
-        # Import the function stub from the deployed module — Modal SDK
-        # requires importing the decorated stub to get a .remote() handle
-        import importlib, sys
-        sys.path.insert(0, "/app")
-        module = importlib.import_module("compute.app")
-        func = getattr(module, func_name)
+        # Get function handle from the deployed App — this is the Modal SDK's
+        # native pattern; the App object holds references to all deployed functions
+        func = getattr(app, func_name, None)
+        if func is None:
+            raise AttributeError(f"Function '{func_name}' not found on deployed app '{MODAL_DEPLOYED_APP_NAME}'")
 
         # Call on Modal GPU (spins up container, runs, returns result)
         result = func.remote(smiles, **kwargs)
@@ -196,10 +195,10 @@ async def dispatch_docking(
         if app is None:
             raise RuntimeError("Modal app not available")
 
-        import sys
-        sys.path.insert(0, "/app")
-        from compute.app import run_vina_docking
-        result = run_vina_docking.remote(
+        func = getattr(app, "run_vina_docking")
+        if func is None:
+            raise RuntimeError("Function 'run_vina_docking' not found in deployed app")
+        result = func.remote(
             ligand_pdbqt=ligand_pdbqt,
             receptor_pdbqt=receptor_pdbqt,
             center_x=center_x, center_y=center_y, center_z=center_z,
@@ -253,10 +252,12 @@ async def dispatch_md(
         }
 
     try:
-        import sys
-        sys.path.insert(0, "/app")
-        from compute.app import run_openmm_simulation
-        result = run_openmm_simulation.remote(
+        import modal
+        app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME)
+        func = getattr(app, "run_openmm_simulation")
+        if func is None:
+            raise RuntimeError("Function 'run_openmm_simulation' not found in deployed app")
+        result = func.remote(
             pdb_content=pdb_content,
             forcefield=forcefield,
             solvent=solvent,
@@ -304,10 +305,12 @@ async def dispatch_qm(
         }
 
     try:
-        import sys
-        sys.path.insert(0, "/app")
-        from compute.app import run_psi4_calculation
-        result = run_psi4_calculation.remote(
+        import modal
+        app = modal.App.lookup(MODAL_DEPLOYED_APP_NAME)
+        func = getattr(app, "run_psi4_calculation")
+        if func is None:
+            raise RuntimeError("Function 'run_psi4_calculation' not found in deployed app")
+        result = func.remote(
             molecule_data=molecule_data,
             task=task,
             theory=theory,

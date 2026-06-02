@@ -70,11 +70,11 @@ async def get_modal_status() -> Dict[str, Any]:
 
         # Try to call health_check
         try:
-            # Import from the modal app module
-            import sys
-            sys.path.insert(0, "/app")
-            from compute.app import health_check
-            result = health_check.remote()
+            # Get function handle from the deployed App
+            func = getattr(app, "health_check", None)
+            if func is None:
+                raise RuntimeError("Function 'health_check' not found in deployed app")
+            result = func.remote()
             status["status"] = "healthy"
             status["functions"] = result.get("functions", [])
             status["message"] = "Modal GPU compute is operational"
