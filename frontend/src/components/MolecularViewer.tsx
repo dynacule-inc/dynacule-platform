@@ -176,7 +176,7 @@ async function applyPreset(
     }
     // Inject roughness for shinier materials — all rep types respect this property
     if (params.roughness === undefined) {
-      params = { ...params, roughness: 0.15 };
+      params = { ...params, roughness: 0.05 };
     }
     const repr = component.addRepresentation(type, params);
     if (repr && reprStore) reprStore[category].push(repr);
