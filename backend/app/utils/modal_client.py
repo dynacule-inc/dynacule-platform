@@ -134,7 +134,8 @@ async def dispatch_cheminformatics(
 
         # Import the function stub from the deployed module — Modal SDK
         # requires importing the decorated stub to get a .remote() handle
-        import importlib
+        import importlib, sys
+        sys.path.insert(0, "/app")
         module = importlib.import_module("modal.app")
         func = getattr(module, func_name)
 
@@ -195,6 +196,8 @@ async def dispatch_docking(
         if app is None:
             raise RuntimeError("Modal app not available")
 
+        import sys
+        sys.path.insert(0, "/app")
         from modal.app import run_vina_docking
         result = run_vina_docking.remote(
             ligand_pdbqt=ligand_pdbqt,
@@ -250,6 +253,8 @@ async def dispatch_md(
         }
 
     try:
+        import sys
+        sys.path.insert(0, "/app")
         from modal.app import run_openmm_simulation
         result = run_openmm_simulation.remote(
             pdb_content=pdb_content,
@@ -299,6 +304,8 @@ async def dispatch_qm(
         }
 
     try:
+        import sys
+        sys.path.insert(0, "/app")
         from modal.app import run_psi4_calculation
         result = run_psi4_calculation.remote(
             molecule_data=molecule_data,

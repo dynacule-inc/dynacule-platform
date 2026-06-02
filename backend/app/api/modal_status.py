@@ -72,7 +72,7 @@ async def get_modal_status() -> Dict[str, Any]:
         try:
             # Import from the modal app module
             import sys
-            sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/../../")
+            sys.path.insert(0, "/app")
             from modal.app import health_check
             result = health_check.remote()
             status["status"] = "healthy"
