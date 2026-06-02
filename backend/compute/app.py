@@ -86,7 +86,7 @@ def compute_descriptors(smiles: str) -> dict:
             "RingCount": Descriptors.RingCount(mol),
             "HeavyAtomCount": Descriptors.HeavyAtomCount(mol),
             "FractionCSP3": round(Descriptors.FractionCSP3(mol), 4),
-            "NumHeteroatoms": rdMolDescriptors.GetNumHeteroatoms(mol),
+            "NumHeteroatoms": Descriptors.NumHeteroatoms(mol),
             "MolLogP": round(Descriptors.MolLogP(mol), 4),
             "LabuteASA": round(Descriptors.LabuteASA(mol), 4),
             "NumAliphaticRings": Descriptors.NumAliphaticRings(mol),
