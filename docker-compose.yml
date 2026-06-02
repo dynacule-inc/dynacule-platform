@@ -39,6 +39,7 @@ services:
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
       - MODAL_API_TOKEN=ak-48y7v0U4rP1lSZrACYTCI2.as-jMEtmhH0pxe7cm1olUV0GF
+      - MODAL_APP_NAME=shabab747/dynacule-compute
       - ENVIRONMENT=development
     depends_on:
       redis:
