@@ -38,7 +38,7 @@ services:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
-      - MODAL_API_TOKEN=${MODAL_API_TOKEN:-}
+      - MODAL_API_TOKEN=ak-48y7v0U4rP1lSZrACYTCI2.as-jMEtmhH0pxe7cm1olUV0GF
       - ENVIRONMENT=development
     depends_on:
       redis:

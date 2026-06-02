@@ -29,8 +29,8 @@ async def get_modal_status() -> Dict[str, Any]:
     """
     import os
 
-    MODAL_TOKEN = os.environ.get("MODAL_API_TOKEN", None)
-    USE_MODAL = bool(MODAL_TOKEN)
+    MODAL_TOKEN = os.environ.get("MODAL_API_TOKEN") or None
+    USE_MODAL = bool(MODAL_TOKEN) and len(MODAL_TOKEN) > 0
     MODAL_DEPLOYED_APP_NAME = os.environ.get("MODAL_APP_NAME", "dynacule-compute")
 
     status = {
