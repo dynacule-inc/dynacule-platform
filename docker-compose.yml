@@ -30,8 +30,9 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+      - dynacule_db:/app
     environment:
-      - DATABASE_URL=sqlite:///./dynacule.db
+      - DATABASE_URL=sqlite:////app/dynacule.db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - CELERY_BROKER_URL=redis://redis:6379/0
@@ -65,3 +66,4 @@ services:
 
 volumes:
   redis_data:
+  dynacule_db:
