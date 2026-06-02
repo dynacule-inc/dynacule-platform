@@ -16,8 +16,13 @@ _modal_app_env = os.environ.get("MODAL_APP_NAME", "dynacule-compute")
 MODAL_DEPLOYED_APP_NAME = _modal_app_env.split("/")[-1] if "/" in _modal_app_env else _modal_app_env
 
 # Check if Modal is configured
-MODAL_TOKEN = os.environ.get("MODAL_API_TOKEN", None)
-USE_MODAL = bool(MODAL_TOKEN) and len(MODAL_TOKEN) > 0
+# Modal SDK accepts either MODAL_TOKEN_ID + MODAL_TOKEN_SECRET (preferred) or MODAL_API_TOKEN
+MODAL_TOKEN_ID = os.environ.get("MODAL_TOKEN_ID", None)
+MODAL_TOKEN_SECRET = os.environ.get("MODAL_TOKEN_SECRET", None)
+MODAL_API_TOKEN = os.environ.get("MODAL_API_TOKEN", None)
+USE_MODAL = (
+    bool(MODAL_TOKEN_ID) and bool(MODAL_TOKEN_SECRET)
+) or (bool(MODAL_API_TOKEN) and len(MODAL_API_TOKEN) > 0)
 
 
 def get_modal_status() -> Dict[str, Any]:

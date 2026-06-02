@@ -29,8 +29,13 @@ async def get_modal_status() -> Dict[str, Any]:
     """
     import os
 
-    MODAL_TOKEN = os.environ.get("MODAL_API_TOKEN") or None
-    USE_MODAL = bool(MODAL_TOKEN) and len(MODAL_TOKEN) > 0
+    MODAL_TOKEN_ID = os.environ.get("MODAL_TOKEN_ID") or None
+    MODAL_TOKEN_SECRET = os.environ.get("MODAL_TOKEN_SECRET") or None
+    MODAL_API_TOKEN = os.environ.get("MODAL_API_TOKEN") or None
+    # Check if Modal is configured via either token pair or combined key
+    USE_MODAL = (
+        bool(MODAL_TOKEN_ID) and bool(MODAL_TOKEN_SECRET)
+    ) or (bool(MODAL_API_TOKEN) and len(MODAL_API_TOKEN) > 0)
     MODAL_DEPLOYED_APP_NAME = os.environ.get("MODAL_APP_NAME", "dynacule-compute")
     # Strip workspace prefix if present (e.g. "shabab747/dynacule-compute" → "dynacule-compute")
     if "/" in MODAL_DEPLOYED_APP_NAME:
